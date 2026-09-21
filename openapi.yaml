@@ -1,0 +1,126 @@
+openapi: 3.0.3
+info:
+  title: Invoice to JSON Extractor
+  version: 1.0.0
+  description: |
+    Convert raw invoice text to structured JSON. Bilingual EN/VI.
+    Extracts vendor, dates, totals, tax, line items with confidence score.
+servers:
+  - url: https://invoice-extract-api.onrender.com
+    description: Production
+paths:
+  /v1/invoice/extract:
+    post:
+      summary: Extract structured data from invoice text
+      operationId: extractInvoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+                  description: Raw invoice text
+                  example: "Invoice #: INV-001\nDate: 2024-01-15\nTotal: 132.00 USD"
+                content_type:
+                  type: string
+                  enum: [text, base64_pdf, base64_image]
+                  default: text
+                language:
+                  type: string
+                  description: "Optional language hint: en, vi, ja, ..."
+                  example: en
+      responses:
+        '200':
+          description: Extraction result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  invoice:
+                    type: object
+                    properties:
+                      invoice_number:
+                        type: string
+                        nullable: true
+                      invoice_date:
+                        type: string
+                        nullable: true
+                      due_date:
+                        type: string
+                        nullable: true
+                      currency:
+                        type: string
+                        nullable: true
+                      vendor_name:
+                        type: string
+                        nullable: true
+                      vendor_tax_id:
+                        type: string
+                        nullable: true
+                      customer_name:
+                        type: string
+                        nullable: true
+                      subtotal:
+                        type: number
+                        nullable: true
+                      tax_amount:
+                        type: number
+                        nullable: true
+                      total:
+                        type: number
+                        nullable: true
+                      line_items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            description:
+                              type: string
+                            quantity:
+                              type: number
+                            unit_price:
+                              type: number
+                            amount:
+                              type: number
+                      confidence:
+                        type: number
+                  model:
+                    type: string
+                  processing_ms:
+                    type: integer
+        '400':
+          description: Bad request
+  /v1/invoice/extract/base64:
+    post:
+      summary: Extract from base64-encoded PDF or image
+      operationId: extractInvoiceBase64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+                  description: Base64-encoded PDF or image (data URI or raw base64)
+                language:
+                  type: string
+      responses:
+        '200':
+          description: Extraction result
+  /health:
+    get:
+      summary: Health check
+      operationId: health
+      responses:
+        '200':
+          description: OK
