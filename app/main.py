@@ -10,8 +10,9 @@ from app.schemas import ExtractRequest, ExtractResponse, Invoice
 from app.llm import extract_invoice
 from app.receipt import extract_receipt_heuristic
 from app.resume import extract_resume_heuristic
+from app.bank_statement import extract_bank_statement_heuristic
 
-app = FastAPI(title="Document Extraction API", version="1.1.0")
+app = FastAPI(title="Document Extraction API", version="1.2.0")
 
 PROXY_SECRET = os.getenv("RAPIDAPI_PROXY_SECRET", "").strip()
 
@@ -27,19 +28,20 @@ async def check_rapidapi_secret(request: Request, call_next):
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "ts": int(time.time()), "version": "1.1.0"}
+    return {"status": "ok", "ts": int(time.time()), "version": "1.2.0"}
 
 
 @app.get("/")
 def root():
     return {
         "name": "Document Extraction API",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "endpoints": {
             "POST /v1/invoice/extract": "Invoice text -> structured JSON",
             "POST /v1/invoice/extract/base64": "Invoice (base64 PDF/image) -> JSON",
             "POST /v1/receipt/extract": "Receipt text -> structured JSON",
             "POST /v1/resume/extract": "Resume/CV text -> structured JSON",
+            "POST /v1/bank-statement/extract": "Bank statement text -> transactions JSON",
             "GET /health": "Health check",
             "GET /docs": "OpenAPI UI",
         },
@@ -109,3 +111,17 @@ def extract_resume(req: ExtractRequest):
         return {"success": False, "error": str(e), "model": "heuristic:v1", "processing_ms": 0}
     ms = int((time.time() - t0) * 1000)
     return {"success": True, "resume": parsed, "error": None, "model": "heuristic:v1", "processing_ms": ms}
+
+
+@app.post("/v1/bank-statement/extract")
+def extract_bank_statement(req: ExtractRequest):
+    if not req.content or len(req.content) < 20:
+        raise HTTPException(status_code=400, detail="content too short")
+    t0 = time.time()
+    text = _prepare_content(req)
+    try:
+        parsed = extract_bank_statement_heuristic(text, req.language)
+    except Exception as e:
+        return {"success": False, "error": str(e), "model": "heuristic:v1", "processing_ms": 0}
+    ms = int((time.time() - t0) * 1000)
+    return {"success": True, "bank_statement": parsed, "error": None, "model": "heuristic:v1", "processing_ms": ms}
