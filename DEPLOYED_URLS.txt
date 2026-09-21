@@ -1,0 +1,16 @@
+# Production URLs — Track này để sau này reference
+
+## Render (backend)
+API_BASE_URL = https://invoice-extract-api-4eq9.onrender.com
+health = https://invoice-extract-api-4eq9.onrender.com/health
+docs = https://invoice-extract-api-4eq9.onrender.com/docs
+openapi_json = https://invoice-extract-api-4eq9.onrender.com/openapi.json
+
+## GitHub
+REPO = https://github.com/tuyentn23-dot/invoice-extract-api
+
+## RapidAPI (chưa có, sẽ điền sau khi publish)
+RAPIDAPI_URL =
+
+## Deploy date
+2026-09-22

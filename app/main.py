@@ -1,9 +1,12 @@
-"""FastAPI app: Document extraction API for RapidAPI listing."""
+"""FastAPI app: Document extraction API for RapidAPI listing.
+Note: we override openapi_version to 3.0.3 for RapidAPI compatibility.
+"""
 import os
 import time
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi.openapi.utils import get_openapi
 
 from app.schemas import ExtractRequest, ExtractResponse, Invoice
 from app.llm import extract_invoice
@@ -11,8 +14,9 @@ from app.receipt import extract_receipt_heuristic
 from app.resume import extract_resume_heuristic
 from app.bank_statement import extract_bank_statement_heuristic
 from app.pdf_ocr import decode_to_text
+from app.openapi_compat import to_3_0_3
 
-app = FastAPI(title="Document Extraction API", version="1.3.0")
+app = FastAPI(title="Invoice to JSON Extractor", version="1.3.0")
 
 PROXY_SECRET = os.getenv("RAPIDAPI_PROXY_SECRET", "").strip()
 
@@ -34,7 +38,7 @@ def health():
 @app.get("/")
 def root():
     return {
-        "name": "Document Extraction API",
+        "name": "Invoice to JSON Extractor",
         "version": "1.3.0",
         "endpoints": {
             "POST /v1/invoice/extract": "Invoice text -> structured JSON",
@@ -58,13 +62,14 @@ def _prepare_content(req: ExtractRequest) -> str:
     if req.content_type in ("base64_pdf", "base64_image"):
         text = decode_to_text(c)
         if not text:
-            raise HTTPException(status_code=422, detail="Could not extract text from base64 (install pdfplumber/pytesseract or send text instead)")
+            raise HTTPException(status_code=422, detail="Could not extract text from base64")
         return text
     raise HTTPException(status_code=400, detail=f"Unsupported content_type: {req.content_type}")
 
 
-@app.post("/v1/invoice/extract", response_model=ExtractResponse)
+@app.post("/v1/invoice/extract", response_model=ExtractResponse, summary="Extract invoice fields to JSON")
 def extract_invoice_text(req: ExtractRequest):
+    """Extract structured invoice data from raw text."""
     if not req.content or len(req.content) < 10:
         raise HTTPException(status_code=400, detail="content too short")
     text = _prepare_content(req)
@@ -79,8 +84,9 @@ def extract_invoice_text(req: ExtractRequest):
     return ExtractResponse(success=True, invoice=inv, model=model, processing_ms=ms)
 
 
-@app.post("/v1/invoice/extract/base64", response_model=ExtractResponse)
+@app.post("/v1/invoice/extract/base64", response_model=ExtractResponse, summary="Extract invoice from base64 PDF/image")
 def extract_invoice_b64(req: ExtractRequest):
+    """Extract invoice fields from a base64-encoded PDF or image."""
     req.content_type = "base64_pdf"
     return extract_invoice_text(req)
 
@@ -98,34 +104,62 @@ def _wrap_heuristic(req: ExtractRequest, fn, key: str, min_len: int = 10):
     return {"success": True, key: parsed, "error": None, "model": "heuristic:v1", "processing_ms": ms}
 
 
-@app.post("/v1/receipt/extract")
+@app.post("/v1/receipt/extract", summary="Extract receipt fields to JSON")
 def extract_receipt(req: ExtractRequest):
+    """Extract structured data from a receipt."""
     return _wrap_heuristic(req, extract_receipt_heuristic, "receipt")
 
 
-@app.post("/v1/receipt/extract/base64")
+@app.post("/v1/receipt/extract/base64", summary="Extract receipt from base64")
 def extract_receipt_b64(req: ExtractRequest):
     req.content_type = "base64_pdf"
     return extract_receipt(req)
 
 
-@app.post("/v1/resume/extract")
+@app.post("/v1/resume/extract", summary="Extract resume fields to JSON")
 def extract_resume(req: ExtractRequest):
+    """Extract structured data from a resume/CV."""
     return _wrap_heuristic(req, extract_resume_heuristic, "resume", min_len=20)
 
 
-@app.post("/v1/resume/extract/base64")
+@app.post("/v1/resume/extract/base64", summary="Extract resume from base64")
 def extract_resume_b64(req: ExtractRequest):
     req.content_type = "base64_pdf"
     return extract_resume(req)
 
 
-@app.post("/v1/bank-statement/extract")
+@app.post("/v1/bank-statement/extract", summary="Extract bank statement transactions")
 def extract_bank_statement(req: ExtractRequest):
+    """Extract transactions from a bank statement."""
     return _wrap_heuristic(req, extract_bank_statement_heuristic, "bank_statement", min_len=20)
 
 
-@app.post("/v1/bank-statement/extract/base64")
+@app.post("/v1/bank-statement/extract/base64", summary="Extract bank statement from base64")
 def extract_bank_statement_b64(req: ExtractRequest):
     req.content_type = "base64_pdf"
     return extract_bank_statement(req)
+
+
+# --- Force OpenAPI 3.0.3 for RapidAPI compatibility ---
+_DEFAULT_OPENAPI = app.openapi
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    schema = get_openapi(
+        title="Invoice to JSON Extractor",
+        version="1.3.0",
+        description=(
+            "Convert invoice text to structured JSON. Bilingual EN/VI. "
+            "Also supports receipt, resume, and bank statement extraction. "
+            "Response typically under 1 second."
+        ),
+        routes=app.routes,
+    )
+    schema = to_3_0_3(schema)
+    app.openapi_schema = schema
+    return schema
+
+
+app.openapi = custom_openapi
