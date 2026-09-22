@@ -15,3 +15,5 @@ venv/
 screenshots/
 scripts/
 openapi.json
+monitoring/
+.proxy_secret

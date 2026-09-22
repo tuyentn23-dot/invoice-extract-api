@@ -1,22 +1,29 @@
-# Production URLs — Track này để sau này reference
+# Production URLs — Tracking
 
-## Render (backend)
+## Backend (Render)
 API_BASE_URL = https://invoice-extract-api-4eq9.onrender.com
 health = https://invoice-extract-api-4eq9.onrender.com/health
 docs = https://invoice-extract-api-4eq9.onrender.com/docs
-openapi_json = https://invoice-extract-api-4eq9.onrender.com/openapi.json
 
 ## GitHub
 REPO = https://github.com/tuyentn23-dot/invoice-extract-api
 
 ## RapidAPI (LIVE)
 PUBLIC_URL = https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
-PROVIDER_DASHBOARD = https://rapidapi.com/provider/12332384/apis/invoice-to-json-extractor1/definition
+PROVIDER = https://rapidapi.com/provider/12332384/apis/invoice-to-json-extractor1/definition
 API_ID = api_1a52888e-b870-4212-9c9d-48e3c124eab3
 VERSION_ID = apiversion_8cc32ff6-a203-49ad-ad16-ee4eb9c5a946
 
+## Launch posts
+REDDIT_R_SAAS = (đã đăng — paste URL vào đây khi có)
+DEV_TO = https://dev.to/tuyentn23dot/i-built-a-document-extraction-api-that-runs-on-regex-no-llm-needed-3b0g
+HACKER_NEWS = (blocked — HN tạm chặn Show HN)
+TWITTER = (chưa đăng)
+LINKEDIN = (chưa đăng)
+INDIEE_HACKERS = (chưa đăng)
+
 ## Status
-- Deploy date: 2026-09-22
 - Live date: 2026-09-22
-- Endpoints: 10
-- Status: PUBLIC
+- Endpoints: 10 (4 types × text/base64)
+- Visibility: PUBLIC
+- Cost/month: $0
