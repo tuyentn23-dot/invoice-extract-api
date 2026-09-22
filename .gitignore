@@ -6,3 +6,12 @@ venv/
 .venv/
 *.log
 .pytest_cache/
+
+# Local automation artifacts
+.browser_profile/
+.chrome_debug/
+.chrome_profile/
+.browser_signal
+screenshots/
+scripts/
+openapi.json
