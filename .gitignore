@@ -17,7 +17,9 @@ scripts/
 openapi.json
 monitoring/
 .proxy_secret
-tray/
+tray/logs/
+tray/state.json
+tray/__pycache__/
 
 # Keep tracking files (explicitly NOT ignored)
 !MANIFEST.md
@@ -29,3 +31,10 @@ tray/
 !LAUNCH_NOW.md
 !SETUP_MONITORING.md
 !SECURITY_TODO.md
+
+# Tray source (tracked)
+!tray/monitor_tray.py
+!tray/config.json
+!tray/start_monitor.bat
+!tray/install_startup.bat
+!tray/README.md

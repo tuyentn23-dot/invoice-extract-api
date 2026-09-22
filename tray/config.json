@@ -1,0 +1,6 @@
+{
+  "check_interval_minutes": 60,
+  "notify_on_new_calls": true,
+  "notify_on_error_rate_above": 5.0,
+  "chrome_cdp_port": 9222
+}
