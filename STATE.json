@@ -1,0 +1,86 @@
+{
+  "project": "invoice-to-json-extractor",
+  "version": "1.0.0",
+  "last_updated": "2026-09-22T00:00:00Z",
+  "phase": "launched-monitoring",
+
+  "urls": {
+    "backend": "https://invoice-extract-api-4eq9.onrender.com",
+    "health": "https://invoice-extract-api-4eq9.onrender.com/health",
+    "rapidapi_public": "https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1",
+    "rapidapi_provider": "https://rapidapi.com/provider/12332384/apis/invoice-to-json-extractor1/definition",
+    "github": "https://github.com/tuyentn23-dot/invoice-extract-api",
+    "devto": "https://dev.to/tuyentn23dot/i-built-a-document-extraction-api-that-runs-on-regex-no-llm-needed-3b0g"
+  },
+
+  "ids": {
+    "rapidapi_api_id": "api_1a52888e-b870-4212-9c9d-48e3c124eab3",
+    "rapidapi_version_id": "apiversion_8cc32ff6-a203-49ad-ad16-ee4eb9c5a946",
+    "rapidapi_provider_id": "12332384",
+    "github_user": "tuyentn23-dot",
+    "devto_user": "tuyentn23dot"
+  },
+
+  "product": {
+    "endpoints_count": 10,
+    "document_types": ["invoice", "receipt", "resume", "bank_statement"],
+    "input_types": ["text", "base64_pdf", "base64_image"],
+    "languages": ["en", "vi"],
+    "engine_primary": "heuristic_regex",
+    "engine_fallback": "llm",
+    "llm_providers": ["deepseek", "groq", "gemini"]
+  },
+
+  "pricing": {
+    "basic": {"price_usd": 0, "quota": 500, "rate_limit": 10},
+    "pro": {"price_usd": 9, "quota": 2000, "rate_limit": 10},
+    "ultra": {"price_usd": 29, "quota": 15000, "rate_limit": 20},
+    "mega": {"price_usd": 99, "quota": 100000, "rate_limit": 50}
+  },
+
+  "metrics": {
+    "as_of": "2026-09-22T01:20:10Z",
+    "api_calls_7d": 0,
+    "paid_subscribers": 0,
+    "free_subscribers": 0,
+    "mrr_usd": 0,
+    "errors_rate_pct": 0,
+    "avg_latency_ms": 0
+  },
+
+  "launch_channels": {
+    "reddit_r_saas": {"status": "posted", "url": null, "date": "2026-09-22"},
+    "devto": {"status": "posted", "url": "https://dev.to/tuyentn23dot/i-built-a-document-extraction-api-that-runs-on-regex-no-llm-needed-3b0g", "date": "2026-09-22"},
+    "hackernews": {"status": "blocked", "reason": "HN tạm chặn Show HN"},
+    "twitter": {"status": "pending"},
+    "linkedin": {"status": "pending"},
+    "indiehackers": {"status": "pending"}
+  },
+
+  "todos": [
+    {"id": "sec1", "task": "Set RAPIDAPI_PROXY_SECRET trên Render + RapidAPI", "priority": "high", "file": "SECURITY_TODO.md"},
+    {"id": "launch_tw", "task": "Đăng Twitter/X", "priority": "medium", "file": "LAUNCH_NOW.md"},
+    {"id": "launch_li", "task": "Đăng LinkedIn", "priority": "medium", "file": "LAUNCH_NOW.md"},
+    {"id": "mon_sched", "task": "Cài Task Scheduler cho daily_monitor.ps1", "priority": "medium", "file": "SETUP_MONITORING.md"},
+    {"id": "tray", "task": "Chạy tray_app.py và pin vào startup", "priority": "low", "file": "TRAY_SETUP.md"}
+  ],
+
+  "thresholds": {
+    "calls_7d_to_expand": 10,
+    "subscribers_to_scale": 1,
+    "mrr_to_fulltime": 30,
+    "days_to_pivot": 30,
+    "days_to_review_all": 90
+  },
+
+  "costs": {
+    "monthly_usd": 0,
+    "total_spent_usd": 0
+  },
+
+  "next_actions": [
+    "Chạy scripts/monitor.py daily để lấy metrics",
+    "Sau 7 ngày: đọc monitoring/last_report.log, quyết định build API #2 nếu ≥ 10 calls",
+    "Sau 30 ngày: nếu 0 calls → pivot nền tảng"
+  ]
+}

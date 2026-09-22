@@ -17,3 +17,15 @@ scripts/
 openapi.json
 monitoring/
 .proxy_secret
+tray/
+
+# Keep tracking files (explicitly NOT ignored)
+!MANIFEST.md
+!HANDOFF.md
+!STATE.json
+!SESSION_LOG.md
+!DECISIONS.md
+!TRAY_SETUP.md
+!LAUNCH_NOW.md
+!SETUP_MONITORING.md
+!SECURITY_TODO.md
