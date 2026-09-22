@@ -1,9 +1,8 @@
 {
   "project": "invoice-to-json-extractor",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "last_updated": "2026-09-22T12:30:00Z",
-  "phase": "live-awaiting-first-customer",
-
+  "phase": "live-metrics-integrated",
   "urls": {
     "backend": "https://invoice-extract-api-4eq9.onrender.com",
     "health": "https://invoice-extract-api-4eq9.onrender.com/health",
@@ -12,56 +11,91 @@
     "rapidapi_provider": "https://rapidapi.com/provider/12332384/apis/invoice-to-json-extractor1/definition",
     "github": "https://github.com/tuyentn23-dot/invoice-extract-api"
   },
-
   "ids": {
     "rapidapi_api_id": "api_1a52888e-b870-4212-9c9d-48e3c124eab3",
     "rapidapi_version_id": "apiversion_8cc32ff6-a203-49ad-ad16-ee4eb9c5a946",
     "rapidapi_provider_id": "12332384"
   },
-
   "product": {
     "type": "document-extraction-api",
-    "document_types": ["invoice", "receipt", "resume", "bank_statement", "purchase_order", "contract", "business_card", "utility_bill", "delivery_note", "id_document"],
+    "document_types": [
+      "invoice",
+      "receipt",
+      "resume",
+      "bank_statement",
+      "purchase_order",
+      "contract",
+      "business_card",
+      "utility_bill",
+      "delivery_note",
+      "id_document"
+    ],
     "endpoints_count": 16,
-    "languages": ["en", "vi"]
+    "languages": [
+      "en",
+      "vi"
+    ]
   },
-
   "pricing": {
-    "basic": {"price": 0, "quota": 500, "recommended": false},
-    "pro": {"price": 9, "quota": 2000, "recommended": true},
-    "ultra": {"price": 29, "quota": 15000, "recommended": false},
-    "mega": {"price": 99, "quota": 100000, "recommended": false}
+    "basic": {
+      "price": 0,
+      "quota": 500,
+      "recommended": false
+    },
+    "pro": {
+      "price": 9,
+      "quota": 2000,
+      "recommended": true
+    },
+    "ultra": {
+      "price": 29,
+      "quota": 15000,
+      "recommended": false
+    },
+    "mega": {
+      "price": 99,
+      "quota": 100000,
+      "recommended": false
+    }
   },
-
   "payout": {
     "method": "paypal",
     "email": "tuyentn23@gmail.com",
     "status": "ready"
   },
-
   "monitoring": {
+    "mode": "built-in",
+    "metrics_endpoint": "/metrics",
     "tray_app": "tray/monitor_tray.py",
-    "interval_minutes": 60,
+    "tray_version": "v3",
+    "interval_minutes": 15,
     "auto_start": true,
-    "notifications": "toast"
+    "notes": "Tray polls /metrics directly, no RapidAPI scrape, no Chrome dependency"
   },
-
   "blockers": {
     "reddit": "account TNT23HK bị site-wide spam filter — cần 3 tháng + karma",
     "hacker_news": "account tuyentn23 có 1 karma — HN block Show HN account mới",
     "nothing_technical": "Không còn blocker kỹ thuật"
   },
-
   "next_actions": [
     "Đo traffic hàng ngày qua tray",
     "Build karma Reddit bằng comment (không post link)",
     "Chờ 2-3 tháng trước khi thử Reddit/HN lại",
     "Thử dev.to / Indie Hackers khi có thời gian"
   ],
-
   "cost": {
     "total": 0,
     "currency": "USD",
     "note": "Render free tier, GitHub free, RapidAPI miễn phí đăng"
+  },
+  "architecture": {
+    "metrics_location": "in-API (app/metrics.py)",
+    "per_endpoint": true,
+    "per_subscriber": true,
+    "latency_percentiles": [
+      "p95",
+      "p99"
+    ],
+    "persistence": "in-memory (resets on restart)"
   }
 }

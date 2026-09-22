@@ -15,6 +15,26 @@
 
 Nếu tray chưa chạy → khởi động lại: `tray\start_monitor.bat`
 
+
+## Metrics tích hợp trong backend (v2.1)
+
+Endpoint: `GET https://invoice-extract-api-4eq9.onrender.com/metrics`
+
+Trả về:
+- `total_requests`, `total_errors`, `error_rate_pct`
+- `endpoint_counts`: đếm theo từng path
+- `subscribers`: đếm theo `X-RapidAPI-User` header (RapidAPI tự gửi)
+- `unique_subscribers`: số subscriber khác nhau
+- `avg_latency_ms`, `p95_latency_ms`, `p99_latency_ms`
+- `daily`: rollup theo ngày
+- `uptime_human`
+
+Ẩn khỏi OpenAPI public spec (buyer không thấy).
+
+Tùy chọn bảo vệ bằng env `ADMIN_TOKEN` trên Render.
+
+**Giới hạn:** in-memory, reset khi Render restart (deploy hoặc sau 15 min sleep). Chấp nhận cho MVP.
+
 ## URLs
 
 - Public API: https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
