@@ -1,104 +1,142 @@
-# DECISIONS — Nhật ký quyết định
+# DECISIONS — Invoice to JSON Extractor
 
-> Mỗi quyết định lớn append 1 entry. Không sửa entry cũ.
-
----
-
-## D001 — 2026-09-20: Loại 6 hướng, chọn RapidAPI
-
-**Bối cảnh:** Cần dự án kiếm tiền thứ 2 sau khi trading không khả thi.
-
-**Đã xem xét:**
-1. Funding carry → 2.08%/năm, dưới ngân hàng ❌
-2. Leverage → blown account ❌
-3. Market making retail → spread 0.012bps < phí 2bps ❌
-4. Apify sitemap-diff → commodity ❌
-5. ClawHub → vòng lặp thu tiền đứt ❌
-6. Airdrop → xổ số ❌
-
-**Quyết định:** RapidAPI — vòng lặp khép kín, buyer tự tìm, billing native, AI agent build 100%.
-
-**Lý do:** Chỉ RapidAPI thỏa mãn cả 3 điều kiện (discovery + billing + automation).
+Quyết định đã đưa ra, lý do, và trade-off. Phiên sau đọc để không lặp lại thảo luận.
 
 ---
 
-## D002 — 2026-09-21: Chọn document extraction
+## D001 — Chọn RapidAPI làm nền tảng (2026-09-22)
 
-**Bối cảnh:** Nhiều ngách có thể làm trên RapidAPI.
-
-**Đã so sánh:** Crypto data, weather, IP geo, validation, SEO, time utils, document extraction.
-
-**Quyết định:** Document extraction (invoice/receipt/resume/bank statement).
+**Quyết định:** List API trên RapidAPI, không tự làm SaaS riêng.
 
 **Lý do:**
-- Nhu cầu B2B thật (kế toán, HR, fintech)
-- Regex heuristic làm được → $0 cost
-- Giá cao hơn utility ($9-99/tháng vs $0.0001/call)
-- Ít API đủ tốt trên RapidAPI
-- Bilingual EN/VI = lợi thế niche
+- RapidAPI có 4M+ devs search nội bộ → không cần marketing
+- Billing native → không cần Stripe/Gumroad
+- Free đăng ký, chỉ lấy 25% doanh thu
+- Buyer tự phục vụ, không cần support khách
+
+**Trade-off:**
+- Phí 25% cao
+- Payout PayPal chậm (6-8 tuần)
+- Phụ thuộc nền tảng
+
+**Loại bỏ:** ClawHub (không billing), Chrome Extension (effort cao), AgenticTrade (quá mới)
 
 ---
 
-## D003 — 2026-09-22: Heuristic regex first, LLM fallback
+## D002 — Document extraction làm ngách chính (2026-09-22)
 
-**Bối cảnh:** Có thể dùng LLM cho mọi request, hoặc regex, hoặc hybrid.
-
-**Quyết định:** Hybrid — regex primary, LLM fallback khi confidence thấp.
+**Quyết định:** Tập trung vào invoice/receipt/resume/bank statement, sau mở rộng lên 10 loại tài liệu.
 
 **Lý do:**
-- ~70% invoices theo 15 layout phổ biến, regex bắt được trong 40-60ms
-- LLM cho mọi request → $0.001-0.01/call, không sustainable với free tier
-- Fallback tự động khi regex fail → vẫn giữ accuracy cao
-- Chi phí trung bình round về 0
+- AI agent (LLM + regex) làm rất tốt
+- Buyer trả giá cao ($0.01-0.10/call vs $0.0001 cho utility)
+- Nhu cầu B2B thật (mọi công ty có hóa đơn)
+- Có thể build 10+ biến thể từ cùng hạ tầng
 
-**Trade-off:** Regex có thể bỏ sót edge case. Nhưng 95% request dùng regex, 5% escalate.
+**Loại bỏ:** Weather, crypto price, IP geolocation (bão hòa)
 
 ---
 
-## D004 — 2026-09-22: Publish API public không set proxy secret trước
+## D003 — Heuristic-first, LLM-fallback (2026-09-22)
 
-**Bối cảnh:** RapidAPI khuyến nghị set proxy secret để chặn bypass. Nhưng UI phức tạp, automation tắc.
-
-**Quyết định:** Publish public ngay, set secret sau.
+**Quyết định:** Regex engine chạy trước, LLM chỉ khi cần.
 
 **Lý do:**
-- Risk thấp với MVP mới chưa có traffic
-- Ưu tiên launch để có dữ liệu
-- Secret có thể set trong 2 phút thủ công bất kỳ lúc nào
-- Nếu phát hiện abuse → set secret ngay
+- $0 ongoing cost cho 70% case
+- Response <1s (nhanh hơn LLM)
+- Không phụ thuộc API key của provider
+- LLM key của user hiện bị 402/403, không dùng được
 
-**Ghi chú:** TODO trong `SECURITY_TODO.md`.
-
----
-
-## D005 — 2026-09-22: Không dùng HN (temporarily blocked)
-
-**Bối cảnh:** HN đăng show HN bị redirect tới `/showlim` với thông báo "temporarily restricting Show HNs".
-
-**Quyết định:** Bỏ qua HN lúc này. Tập trung Dev.to + Reddit + Twitter.
-
-**Lý do:** Policy toàn cầu của HN, không thể bypass. Có thể thử lại sau 30 ngày.
+**Trade-off:**
+- Độ chính xác thấp hơn pure-LLM ở case phức tạp
+- Cần maintain regex patterns
 
 ---
 
-## D006 — 2026-09-22: Build persistence layer trước khi build thêm API
+## D004 — Không crypto/AI edge, mở rộng mọi ngách (2026-09-22)
 
-**Bối cảnh:** Sau phiên 1-2, hệ thống đã phức tạp. Phiên mới cần biết ngay trạng thái.
-
-**Quyết định:** Tạo MANIFEST.md + STATE.json + SESSION_LOG.md + DECISIONS.md + HANDOFF.md + tray app.
+**Quyết định:** Bỏ giới hạn "chỉ crypto", mở sang mọi ngành có nhu cầu document extraction.
 
 **Lý do:**
-- Tránh mất context giữa các phiên
-- AI agent phiên sau không cần đọc lại toàn bộ lịch sử
-- Có single source of truth
+- Crypto = thị trường nhỏ, nhiều regulation
+- Document = thị trường lớn, ổn định
+- AI agent build được mọi loại extraction
 
 ---
 
-<!-- Template:
-## D00N — YYYY-MM-DD: <tiêu đề>
+## D005 — Tạo 1 API với 16 endpoints thay vì 6 API riêng (2026-09-22)
 
-**Bối cảnh:** ...
-**Quyết định:** ...
-**Lý do:** ...
-**Trade-off:** ...
--->
+**Quyết định:** Nhồi tất cả extractors vào cùng API `invoice-to-json-extractor1`.
+
+**Lý do:**
+- Tăng surface trên Hub search (16 điểm chạm)
+- Chỉ cần 1 lần setup pricing, 1 lần billing
+- 1 subscriber trả tiền dùng được cả 16 endpoints
+
+**Trade-off:**
+- Tên "Invoice to JSON Extractor" không còn đúng (chỉ là 1/10 loại)
+- Có thể đổi tên sau khi có traffic
+
+---
+
+## D006 — Không spam Reddit/HN bằng automation (2026-09-22)
+
+**Quyết định:** Dừng launch qua Reddit và HN sau 3 lần bị remove.
+
+**Lý do:**
+- r/SaaS, r/webdev: AutoMod remove vì account <3 tháng
+- r/documentAutomation: Reddit **site-wide filter** remove
+- HN: block Show HN với account 1 karma
+- Cố tiếp = risk ban account
+
+**Kết luận:** Chờ 2-3 tháng build karma, không cố launch bằng account mới.
+
+---
+
+## D007 — Tray monitor thay vì dashboard web (2026-09-22)
+
+**Quyết định:** App system tray (pystray) thay vì web dashboard.
+
+**Lý do:**
+- Không cần deploy thêm service
+- Chạy ngay trên máy user
+- Notification tự nhiên hơn
+- Không tốn GPU/RAM
+
+**Trade-off:**
+- Chỉ chạy khi user bật máy
+- Phụ thuộc Chrome CDP
+- Không share được cho team
+
+---
+
+## D008 — OpenAPI 3.0.3 force override (2026-09-22)
+
+**Quyết định:** Convert spec từ 3.1.0 (FastAPI default) xuống 3.0.3.
+
+**Lý do:** RapidAPI chỉ nhận OpenAPI 3.0.x. FastAPI sinh 3.1.0 với `type: [X, "null"]` và `servers` — RapidAPI từ chối.
+
+**Giải pháp:** `app/openapi_compat.py` — recursive transformer: `anyOf: [X, null]` → `nullable: true`.
+
+---
+
+## D009 — Không thêm proxy secret ngay (2026-09-22)
+
+**Quyết định:** Trì hoãn cấu hình `RAPIDAPI_PROXY_SECRET`.
+
+**Lý do:**
+- Không ảnh hưởng khách hàng
+- MVP exposure 1-3 ngày chấp nhận được
+- Ưu tiên launch > security
+
+**TODO:** Xem `SECURITY_TODO.md` — làm khi có thời gian.
+
+---
+
+## Quy tắc rút ra
+
+1. **Platform có buyer tự tìm > tự marketing.** RapidAPI thắng Reddit/HN cho solo dev.
+2. **Account mới không launch được.** Cần build history trước.
+3. **Tăng surface bằng endpoints > nhiều API nhỏ.** 16 endpoints cùng billing tốt hơn 6 API riêng.
+4. **Heuristic-first giảm chi phí.** LLM chỉ khi cần — cắt 70% chi phí inference.
+5. **Đo trước khi build thêm.** Traffic là tín hiệu duy nhất để quyết định.

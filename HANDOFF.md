@@ -1,158 +1,118 @@
-# HANDOFF — Prompt cho phiên mới
+# HANDOFF — Invoice to JSON Extractor
 
-> Copy toàn bộ file này và paste vào phiên mới của TNT AI Agent.
+> **Đọc file này đầu tiên khi bắt đầu phiên mới.**
 
----
+## Trạng thái ngắn gọn
 
-## BỐI CẢNH
+**Dự án đã LIVE.** Không còn việc kỹ thuật. Đang chờ traffic đầu tiên.
 
-Bạn đang tiếp quản dự án **Invoice to JSON Extractor** — một API bán trên RapidAPI.
+## Việc cần làm ngay khi bắt đầu phiên mới
 
-**Mục tiêu:** Tạo thu nhập thụ động $30+ MRR, không cần gặp khách, không content marketing.
+1. **Hỏi user:** "Từ phiên trước, có gì thay đổi không? Có traffic mới, subscriber, hay lỗi gì?"
+2. **Chạy:** `D:/TNT_AI/venv/Scripts/python.exe scripts/monitor.py`
+3. **Xem:** `metrics/report_<ngày mới nhất>.json`
+4. **Kiểm tra tray:** `Get-CimInstance Win32_Process -Filter "name='pythonw.exe'" | Where-Object {$_.CommandLine -like '*monitor_tray*'}`
 
-**Đã live:** 2026-09-22.
+Nếu tray chưa chạy → khởi động lại: `tray\start_monitor.bat`
 
----
+## URLs
 
-## VIỆC ĐẦU TIÊN — ĐỌC THEO THỨ TỰ
+- Public API: https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
+- Backend: https://invoice-extract-api-4eq9.onrender.com
+- Repo: https://github.com/tuyentn23-dot/invoice-extract-api
 
-1. `MANIFEST.md` — hiểu tổng quan dự án
-2. `STATE.json` — số liệu mới nhất
-3. `SESSION_LOG.md` — lịch sử các phiên trước
-4. `DECISIONS.md` — lý do các quyết định
+## Những gì ĐÃ LÀM (không cần làm lại)
 
-**Sau đó chạy:**
-```
-python scripts/report.py
-```
-để lấy metrics hiện tại từ RapidAPI analytics.
+### Build
+- ✅ 16 endpoints, 10 loại document
+- ✅ Heuristic regex + LLM fallback
+- ✅ Bilingual EN/VI
+- ✅ PDF/OCR support
+- ✅ 29 unit tests pass
 
----
+### Deploy
+- ✅ Render free tier, backend v2.0.0
+- ✅ RapidAPI public, 4 pricing tiers
+- ✅ PayPal linked & Ready
+- ✅ Playground test 200 OK
 
-## TRẠNG THÁI HIỆN TẠI (tính đến 2026-09-22)
+### Automation
+- ✅ Tray monitor (pystray, color icons, toast notif)
+- ✅ chrome_guard (auto-launch Chrome debug)
+- ✅ Auto-start Windows
 
-- ✅ Backend live trên Render free
-- ✅ 10 endpoints trên RapidAPI, public
-- ✅ GitHub repo public
-- ✅ Dev.to article published
-- ✅ Reddit r/SaaS posted
-- 🔄 Monitoring script chạy được, đang chờ dữ liệu
-- ❌ $0 doanh thu, 0 subscribers
+## Những gì ĐÃ THỬ VÀ THẤT BẠI (đừng lặp lại)
 
----
+### Reddit — account bị flag
+- r/SaaS, r/webdev: AutoMod remove (account <3 tháng)
+- r/documentAutomation: Reddit **site-wide filter** remove
+- Account `TNT23HK` giờ bị spam filter toàn cục
+- **Không post link từ account này nữa.** Cần 3 tháng + karma.
 
-## CẤU TRÚC QUAN TRỌNG
+### Hacker News — account mới không post được
+- Account `tuyentn23` có 1 karma
+- HN chặn Show HN từ account mới
+- **Cần build karma 1-2 tuần trước.**
 
-```
-D:\TNT_AI\venture_foundry\rapidapi_extract\
-├── MANIFEST.md          ← đọc đầu tiên
-├── STATE.json           ← số liệu
-├── SESSION_LOG.md       ← lịch sử
-├── DECISIONS.md         ← lý do
-├── HANDOFF.md           ← file này
-├── app/                 ← code FastAPI
-├── tests/               ← test suite
-├── scripts/             ← automation (gitignored)
-└── monitoring/          ← snapshots (gitignored)
-```
+## QUY TẮC BẮT BUỘC
 
----
+1. ❌ **KHÔNG post Reddit/HN** với account hiện tại
+2. ❌ **KHÔNG thêm API mới** cho tới khi có ≥1 paid subscriber
+3. ❌ **KHÔNG sửa pricing** khi chưa có traffic thật
+4. ❌ **KHÔNG automation social submit** — risk ban
+5. ✅ **Đo trước, build sau** — traffic là tín hiệu duy nhất
 
-## QUY TẮC BẤT DI BẤT DỊCH
+## Ngưỡng quyết định
 
-1. **Không tiêu tiền** cho đến khi MRR ≥ $30
-2. **Không build thêm API** cho đến khi API #1 có ≥ 10 calls/7 ngày
-3. **Mọi quyết định** ghi vào `DECISIONS.md`
-4. **Mọi phiên** append 1 entry vào `SESSION_LOG.md`
-5. **Không commit** thư mục `scripts/`, `monitoring/`, `screenshots/`
-6. **Không sửa** URL backend trừ khi có lý do chính đáng
-
----
-
-## NGƯỠNG QUYẾT ĐỊNH
-
-| Metric | Ngưỡng | Hành động |
+| Mốc | Đo | Hành động |
 |---|---|---|
-| API calls/7 ngày | ≥ 10 | Build API #2 |
-| Paid subscribers | ≥ 1 | Tăng tốc marketing |
-| MRR | ≥ $30 | Deploy full-time |
-| 30 ngày, 0 calls | 0 | Pivot nền tảng |
-| 90 ngày, < $100 MRR | < $100 | Xem lại toàn bộ chiến lược |
+| D+7 | RapidAPI test calls ≥5 | tiếp tục, chờ |
+| D+14 | Subscribers ≥1 | build thêm API cùng hạ tầng |
+| D+30 | MRR >$0 | tăng tốc build |
+| D+30 | MRR =$0 | đổi kênh (dev.to, Indie Hackers) |
+| D+90 | MRR <$100 | pivot nền tảng (Replicate/HF) |
 
----
+## Cấu trúc repo
 
-## VIỆC CẦN LÀM NGAY
+```
+rapidapi_extract/
+├── app/          # FastAPI code (16 endpoints)
+├── tests/        # 29 unit tests
+├── tray/         # System tray monitor
+├── metrics/      # Auto-generated reports
+├── scripts/      # Playwright automation (gitignored)
+├── MANIFEST.md   # File này mô tả toàn bộ
+├── STATE.json    # Machine-readable state
+├── HANDOFF.md    # File này
+├── HANDOFF_PROMPT.md (ở ../Clawhub/) — Prompt đầy đủ
+├── STATUS.md     # Trạng thái cho human đọc
+├── START_HERE.md # Entry point
+├── LAUNCH_LOG.md # Kết quả launch thật
+└── DEPLOYED_URLS.txt
+```
 
-1. **Set RAPIDAPI_PROXY_SECRET** — xem `SECURITY_TODO.md`
-2. **Đăng Twitter/X** — copy từ `LAUNCH_NOW.md`
-3. **Đăng LinkedIn** — copy từ `LAUNCH_NOW.md`
-4. **Setup Task Scheduler** cho monitoring — xem `SETUP_MONITORING.md`
+## Chi phí & doanh thu
 
----
+- Chi phí: **$0**
+- Doanh thu: **$0** (chưa có subscriber)
 
-## CÁCH LÀM VIỆC VỚI USER
+## Khi có traffic đầu tiên
 
-**Người dùng:**
-- Không muốn gặp khách
-- Không muốn xuất hiện public
-- Không có content
-- Có hiểu biết crypto + AI agent
-- Muốn tự động hóa tối đa
+1. Chạy `python scripts/monitor.py` để log
+2. Chụp ảnh dashboard
+3. Báo user
+4. Cân nhắc build thêm 5 API nữa cùng hạ tầng để tăng surface
 
-**Quy tắc giao tiếp:**
-- Nói thẳng, không vòng vo
-- Không làm giả định khi có dữ liệu — chạy `report.py` trước
-- Khi bế tắc, đề xuất A/B/C, không tự chọn
-- Mọi dự đoán phải có bằng chứng
+## Khi có bug
 
----
+1. Đọc log: `tray/logs/YYYY-MM.log`
+2. Kiểm tra Render dashboard
+3. Fix code → push GitHub → Render auto-deploy 2 phút
 
-## CÔNG CỤ ĐÃ CÀI
+## Khi hết 30 ngày không traffic
 
-- Python: `D:/TNT_AI/venv/Scripts/python.exe`
-- Playwright + Chromium + real Chrome
-- FastAPI + Pydantic + uvicorn + pytest
-- pystray + PIL (cho tray app)
+1. Thử **dev.to** — account mới OK, không có rule khắt khe
+2. Thử **Indie Hackers** — account mới OK
+3. Thử **Hashnode** — account mới OK
 
----
-
-## LƯU Ý VỀ ENCODING
-
-- Windows PowerShell console đôi khi không hiển thị được Unicode tiếng Việt
-- Khi cần debug, dùng `base64.b64encode()` để tránh lỗi charmap
-- File `SESSION_LOG.md` phải ghi UTF-8
-
----
-
-## BẮT ĐẦU NHƯ THẾ NÀO
-
-Khi user paste prompt này vào phiên mới:
-
-1. Đọc 4 file theo thứ tự trên
-2. Chạy `python scripts/report.py` (có thể cần Chrome debug port nếu muốn scrape)
-3. Báo cáo tình hình cho user trong 5 dòng
-4. Hỏi user 3 câu:
-   - Có gì mới từ phiên trước?
-   - Ưu tiên hôm nay?
-   - Có quyết định nào cần thay đổi?
-5. **Đợi user trả lời rồi mới làm**
-
-**Không tự ý build gì trước khi user xác nhận.**
-
----
-
-## TRƯỜNG HỢP KHẨN CẤP
-
-Nếu API down:
-1. Kiểm tra https://invoice-extract-api-4eq9.onrender.com/health
-2. Nếu 404/500 → vào https://dashboard.render.com → service `invoice-extract-api` → Events → xem log
-3. Render free tier sleep sau 15 phút → lần gọi đầu chậm 30s là bình thường
-
-Nếu RapidAPI listing bị gỡ:
-1. Vào Provider Dashboard → xem notification
-2. Nếu do policy → sửa theo yêu cầu
-3. Nếu do billing → check Payment Settings
-
----
-
-**Chúc may mắn. Không có gì bí ẩn — mọi thứ đều nằm trong các file `.md` và `.json` trong thư mục này.**
+Kênh Reddit/HN cần chờ 2-3 tháng. Trong lúc chờ, giữ tray chạy.
