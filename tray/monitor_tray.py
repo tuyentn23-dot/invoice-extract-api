@@ -24,6 +24,9 @@ for d in (LOGS, METRICS):
     d.mkdir(exist_ok=True)
 
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(TRAY))
+
+from chrome_guard import ensure_chrome
 
 
 # ---------- Logging ----------
@@ -86,6 +89,11 @@ def notify(title, message):
 # ---------- Analytics scrape ----------
 def check_rapidapi():
     """Connect to Chrome CDP, scrape analytics. Returns dict or None."""
+    # ensure Chrome debug is running
+    ok, msg = ensure_chrome()
+    if not ok:
+        log(f'chrome guard: {msg}')
+        return None
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
