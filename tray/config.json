@@ -1,6 +1,6 @@
 {
-  "check_interval_minutes": 60,
+  "check_interval_minutes": 15,
   "notify_on_new_calls": true,
-  "notify_on_error_rate_above": 5.0,
-  "chrome_cdp_port": 9222
+  "notify_on_new_subscribers": true,
+  "admin_token": ""
 }

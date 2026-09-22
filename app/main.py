@@ -1,5 +1,5 @@
-"""FastAPI app: Document extraction API for RapidAPI listing.
-Note: openapi_version forced to 3.0.3 for RapidAPI compatibility.
+"""FastAPI app: Document extraction API.
+OpenAPI forced 3.0.3 for RapidAPI. Metrics built-in (no external tray needed).
 """
 import os
 import time
@@ -20,16 +20,39 @@ from app.delivery_note import extract_delivery_note_heuristic
 from app.id_document import extract_id_document_heuristic
 from app.pdf_ocr import decode_to_text
 from app.openapi_compat import to_3_0_3
+from app.metrics import tracker
 
-VERSION = '2.0.0'
+VERSION = '2.1.0'
+ADMIN_TOKEN = os.getenv('ADMIN_TOKEN', '').strip()
 app = FastAPI(title='Invoice to JSON Extractor', version=VERSION)
 
 PROXY_SECRET = os.getenv('RAPIDAPI_PROXY_SECRET', '').strip()
 
 
+# ---------- Metrics middleware ----------
+@app.middleware('http')
+async def metrics_middleware(request: Request, call_next):
+    t0 = time.time()
+    response = await call_next(request)
+    latency_ms = (time.time() - t0) * 1000
+    # skip metrics on admin/health/docs to keep signal clean
+    if request.url.path not in ('/health', '/metrics', '/docs', '/openapi.json', '/redoc', '/'):
+        subscriber = request.headers.get('X-RapidAPI-User') or None
+        try:
+            tracker.record(request.url.path, request.method, response.status_code, latency_ms, subscriber)
+        except Exception:
+            pass
+    return response
+
+
+# ---------- Auth middleware ----------
 @app.middleware('http')
 async def check_rapidapi_secret(request: Request, call_next):
     if PROXY_SECRET and request.url.path not in ('/health', '/docs', '/openapi.json', '/redoc'):
+        # allow admin endpoint with its own token
+        if request.url.path == '/metrics' and ADMIN_TOKEN:
+            if request.headers.get('Authorization', '') == f'Bearer {ADMIN_TOKEN}':
+                return await call_next(request)
         secret = request.headers.get('X-RapidAPI-Proxy-Secret', '')
         if secret != PROXY_SECRET:
             return JSONResponse(status_code=401, content={'detail': 'Invalid RapidAPI proxy secret'})
@@ -38,7 +61,15 @@ async def check_rapidapi_secret(request: Request, call_next):
 
 @app.get('/health')
 def health():
-    return {'status': 'ok', 'ts': int(time.time()), 'version': VERSION}
+    snap = tracker.snapshot()
+    return {
+        'status': 'ok',
+        'ts': int(time.time()),
+        'version': VERSION,
+        'uptime_human': snap['uptime_human'],
+        'total_requests': snap['total_requests'],
+        'unique_subscribers': snap['unique_subscribers'],
+    }
 
 
 @app.get('/')
@@ -62,11 +93,26 @@ def root():
             'POST /v1/delivery-note/extract': 'Delivery note -> JSON',
             'POST /v1/id-document/extract': 'ID document -> JSON',
             'GET /health': 'Health check',
+            'GET /metrics': 'Internal metrics (admin token required)',
             'GET /docs': 'OpenAPI UI',
         },
     }
 
 
+@app.get('/metrics')
+def metrics(request: Request):
+    """Return metrics snapshot.
+    - If ADMIN_TOKEN is set, requires Authorization: Bearer <token>.
+    - If ADMIN_TOKEN is not set, allows access (dev mode).
+    """
+    if ADMIN_TOKEN:
+        auth = request.headers.get('Authorization', '')
+        if auth != f'Bearer {ADMIN_TOKEN}':
+            raise HTTPException(status_code=401, detail='Invalid admin token')
+    return tracker.snapshot()
+
+
+# ---------- Extractors ----------
 def _prepare_content(req: ExtractRequest) -> str:
     c = req.content
     if req.content_type == 'text':
@@ -114,7 +160,6 @@ def _wrap(req: ExtractRequest, fn, key: str, min_len: int = 10):
     return {'success': True, key: parsed, 'error': None, 'model': 'heuristic:v2', 'processing_ms': ms}
 
 
-# --- RECEIPT ---
 @app.post('/v1/receipt/extract', summary='Extract receipt fields to JSON')
 def ep_receipt(req: ExtractRequest):
     return _wrap(req, extract_receipt_heuristic, 'receipt')
@@ -123,8 +168,6 @@ def ep_receipt(req: ExtractRequest):
 def ep_receipt_b64(req: ExtractRequest):
     req.content_type = 'base64_pdf'; return ep_receipt(req)
 
-
-# --- RESUME ---
 @app.post('/v1/resume/extract', summary='Extract resume fields to JSON')
 def ep_resume(req: ExtractRequest):
     return _wrap(req, extract_resume_heuristic, 'resume', min_len=20)
@@ -133,8 +176,6 @@ def ep_resume(req: ExtractRequest):
 def ep_resume_b64(req: ExtractRequest):
     req.content_type = 'base64_pdf'; return ep_resume(req)
 
-
-# --- BANK STATEMENT ---
 @app.post('/v1/bank-statement/extract', summary='Extract bank statement transactions')
 def ep_bank(req: ExtractRequest):
     return _wrap(req, extract_bank_statement_heuristic, 'bank_statement', min_len=20)
@@ -143,44 +184,32 @@ def ep_bank(req: ExtractRequest):
 def ep_bank_b64(req: ExtractRequest):
     req.content_type = 'base64_pdf'; return ep_bank(req)
 
-
-# --- PURCHASE ORDER ---
 @app.post('/v1/purchase-order/extract', summary='Extract purchase order fields to JSON')
 def ep_po(req: ExtractRequest):
     return _wrap(req, extract_purchase_order_heuristic, 'purchase_order')
 
-
-# --- CONTRACT ---
 @app.post('/v1/contract/extract', summary='Extract contract key terms to JSON')
 def ep_contract(req: ExtractRequest):
     return _wrap(req, extract_contract_heuristic, 'contract')
 
-
-# --- BUSINESS CARD ---
 @app.post('/v1/business-card/extract', summary='Extract business card fields to JSON')
 def ep_card(req: ExtractRequest):
     return _wrap(req, extract_business_card_heuristic, 'business_card')
 
-
-# --- UTILITY BILL ---
 @app.post('/v1/utility-bill/extract', summary='Extract utility bill fields to JSON')
 def ep_utility(req: ExtractRequest):
     return _wrap(req, extract_utility_bill_heuristic, 'utility_bill')
 
-
-# --- DELIVERY NOTE ---
 @app.post('/v1/delivery-note/extract', summary='Extract delivery note fields to JSON')
 def ep_dn(req: ExtractRequest):
     return _wrap(req, extract_delivery_note_heuristic, 'delivery_note')
 
-
-# --- ID DOCUMENT ---
 @app.post('/v1/id-document/extract', summary='Extract ID document fields to JSON')
 def ep_id(req: ExtractRequest):
     return _wrap(req, extract_id_document_heuristic, 'id_document', min_len=15)
 
 
-# --- OpenAPI 3.0.3 for RapidAPI ---
+# ---------- OpenAPI 3.0.3 ----------
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
@@ -188,13 +217,16 @@ def custom_openapi():
         title='Invoice to JSON Extractor',
         version=VERSION,
         description=(
-            'Extract structured JSON from 8 document types: invoice, receipt, resume, bank statement, '
+            'Extract structured JSON from 10 document types: invoice, receipt, resume, bank statement, '
             'purchase order, contract, business card, utility bill, delivery note, ID document. '
             'Bilingual EN/VI. Response typically under 1 second.'
         ),
         routes=app.routes,
     )
     schema = to_3_0_3(schema)
+    # hide internal endpoints from public spec
+    for p in ('/metrics',):
+        schema['paths'].pop(p, None)
     app.openapi_schema = schema
     return schema
 

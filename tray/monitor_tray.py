@@ -1,9 +1,6 @@
-"""TNT RapidAPI Monitor - system tray app (v2).
-- Runs in background (use pythonw.exe for no console)
-- Checks RapidAPI analytics every N minutes
-- Color-coded icon: green=new calls, yellow=idle, red=error
-- Toast notifications on new traffic
-- Auto-start via startup shortcut
+"""TNT Monitor - system tray app (v3).
+Polls the API's own /metrics endpoint (not RapidAPI scrape).
+Color icon: yellow=idle, green=traffic, red=error.
 """
 import os
 import sys
@@ -11,6 +8,8 @@ import json
 import time
 import threading
 import subprocess
+import urllib.request
+import base64
 from datetime import datetime
 from pathlib import Path
 
@@ -19,242 +18,197 @@ TRAY = ROOT / 'tray'
 CONFIG = TRAY / 'config.json'
 STATE = TRAY / 'state.json'
 LOGS = TRAY / 'logs'
-METRICS = ROOT / 'metrics'
-for d in (LOGS, METRICS):
+METRICS_DIR = ROOT / 'metrics'
+for d in (LOGS, METRICS_DIR):
     d.mkdir(exist_ok=True)
 
-sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(TRAY))
-
-from chrome_guard import ensure_chrome
+API_BASE = 'https://invoice-extract-api-4eq9.onrender.com'
 
 
-# ---------- Logging ----------
 def log(msg):
     ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     line = f'[{ts}] {msg}'
-    try:
-        print(line, flush=True)
-    except Exception:
-        pass
+    try: print(line, flush=True)
+    except Exception: pass
     try:
         with open(LOGS / f'{datetime.now().strftime("%Y-%m")}.log', 'a', encoding='utf-8') as f:
             f.write(line + '\n')
-    except Exception:
-        pass
+    except Exception: pass
 
 
-# ---------- State ----------
+def load_config():
+    if CONFIG.exists():
+        try: return json.loads(CONFIG.read_text(encoding='utf-8'))
+        except Exception: pass
+    return {'check_interval_minutes': 15, 'notify_on_new_calls': True, 'admin_token': ''}
+
+
 def load_state():
     if STATE.exists():
-        try:
-            return json.loads(STATE.read_text(encoding='utf-8'))
-        except Exception:
-            pass
-    return {'last_check': None, 'last_calls': 0, 'total_checks': 0, 'consecutive_errors': 0}
+        try: return json.loads(STATE.read_text(encoding='utf-8'))
+        except Exception: pass
+    return {'last_check': None, 'last_total_requests': 0, 'last_subscribers': 0, 'consecutive_errors': 0, 'total_checks': 0}
 
 
 def save_state(s):
-    try:
-        STATE.write_text(json.dumps(s, indent=2), encoding='utf-8')
-    except Exception:
-        pass
+    try: STATE.write_text(json.dumps(s, indent=2), encoding='utf-8')
+    except Exception: pass
 
 
-# ---------- Notification (Windows toast) ----------
 def notify(title, message):
     try:
         from plyer import notification
         notification.notify(title=title, message=message, timeout=10, app_name='TNT Monitor')
         return
-    except Exception:
-        pass
+    except Exception: pass
     try:
-        # fallback: PowerShell balloon
         ps = (
             "[reflection.assembly]::loadwithpartialname('System.Windows.Forms')|Out-Null;"
             "[reflection.assembly]::loadwithpartialname('System.Drawing')|Out-Null;"
             "$n=New-Object System.Windows.Forms.NotifyIcon;"
-            "$n.Icon=[System.Drawing.SystemIcons]::Information;"
-            "$n.Visible=$true;"
+            "$n.Icon=[System.Drawing.SystemIcons]::Information;$n.Visible=$true;"
             f"$n.ShowBalloonTip(10000,'{title}','{message}',[System.Windows.Forms.ToolTipIcon]::Info);"
             "Start-Sleep -Seconds 11;$n.Dispose()"
         )
-        subprocess.Popen(['powershell', '-NoProfile', '-WindowStyle', 'Hidden', '-Command', ps],
+        subprocess.Popen(['powershell','-NoProfile','-WindowStyle','Hidden','-Command',ps],
                          creationflags=0x08000000)
     except Exception as e:
         log(f'notify failed: {e}')
 
 
-# ---------- Analytics scrape ----------
-def check_rapidapi():
-    """Connect to Chrome CDP, scrape analytics. Returns dict or None."""
-    # ensure Chrome debug is running
-    ok, msg = ensure_chrome()
-    if not ok:
-        log(f'chrome guard: {msg}')
-        return None
+def fetch_metrics(cfg):
+    """Call /metrics on backend. Returns dict or None."""
+    token = cfg.get('admin_token', '').strip()
+    url = f'{API_BASE}/metrics'
+    req = urllib.request.Request(url)
+    if token:
+        req.add_header('Authorization', f'Bearer {token}')
     try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
-        log('playwright not installed')
+        with urllib.request.urlopen(req, timeout=45) as r:
+            return json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        log(f'metrics HTTP {e.code}')
         return None
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.connect_over_cdp('http://localhost:9222', timeout=15000)
-            ctx = browser.contexts[0]
-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
-            page.goto('https://rapidapi.com/provider/12332384/apis/invoice-to-json-extractor1/analytics',
-                      wait_until='domcontentloaded', timeout=45000)
-            time.sleep(5)
-            txt = page.locator('body').inner_text()
-            import re
-            m_calls = re.search(r'API Calls[^\d]*(\d[\d,]*)', txt)
-            m_err = re.search(r'Error Rate[^\d]*(\d+(?:\.\d+)?)%', txt)
-            m_lat = re.search(r'Latency[^\d]*(\d+(?:\.\d+)?)\s*ms', txt)
-            calls = int(m_calls.group(1).replace(',', '')) if m_calls else 0
-            err = float(m_err.group(1)) if m_err else 0.0
-            lat = float(m_lat.group(1)) if m_lat else 0.0
-            date = datetime.now().strftime('%Y-%m-%d')
-            (METRICS / f'{date}.json').write_text(json.dumps({
-                'timestamp': datetime.now().isoformat(),
-                'calls': calls, 'error_rate': err, 'latency_ms': lat,
-            }, indent=2), encoding='utf-8')
-            return {'calls': calls, 'error_rate': err, 'latency_ms': lat}
     except Exception as e:
-        log(f'check failed: {type(e).__name__}: {str(e)[:150]}')
+        log(f'metrics err: {type(e).__name__}: {str(e)[:120]}')
         return None
 
 
-# ---------- Icon ----------
+def save_metrics_file(m):
+    try:
+        date = datetime.utcnow().strftime('%Y-%m-%d')
+        out = METRICS_DIR / f'{date}.json'
+        out.write_text(json.dumps(m, indent=2), encoding='utf-8')
+    except Exception as e:
+        log(f'save_metrics failed: {e}')
+
+
 def load_icon(name):
-    """Load colored icon by name: default | green | yellow | red."""
     from PIL import Image
     fname = 'icon.png' if name == 'default' else f'icon_{name}.png'
     p = TRAY / fname
     if not p.exists():
-        # generate fallback
         colors = {'green': (34, 139, 34), 'red': (178, 34, 34), 'yellow': (218, 165, 32)}
         img = Image.new('RGB', (64, 64), color=colors.get(name, (25, 55, 130)))
-        p.parent.mkdir(exist_ok=True)
         img.save(p)
     return Image.open(p)
 
 
-# ---------- Main loop ----------
 def monitor_loop(stop_event, icon_ref):
-    interval_min = 60
-    if CONFIG.exists():
-        try:
-            interval_min = int(json.loads(CONFIG.read_text(encoding='utf-8'))
-                               .get('check_interval_minutes', 60))
-        except Exception:
-            pass
+    cfg = load_config()
+    interval_min = max(1, int(cfg.get('check_interval_minutes', 15)))
     log(f'monitor started, interval={interval_min} min')
-    time.sleep(20)  # initial delay
-
+    time.sleep(10)
     while not stop_event.is_set():
         state = load_state()
-        result = check_rapidapi()
+        m = fetch_metrics(cfg)
         icon = icon_ref[0]
-        if result is None:
+        if m is None:
             state['consecutive_errors'] = state.get('consecutive_errors', 0) + 1
             if icon:
                 try:
                     icon.icon = load_icon('red')
                     icon.title = 'TNT Monitor | error'
-                except Exception:
-                    pass
+                except Exception: pass
         else:
             state['consecutive_errors'] = 0
             state['total_checks'] = state.get('total_checks', 0) + 1
             state['last_check'] = datetime.now().isoformat()
-            prev = state.get('last_calls', 0)
-            delta = result['calls'] - prev
+            total = int(m.get('total_requests', 0))
+            subs = int(m.get('unique_subscribers', 0))
+            prev_total = state.get('last_total_requests', 0)
+            prev_subs = state.get('last_subscribers', 0)
+            delta = total - prev_total
             icon_name = 'yellow'
-            if prev == 0 and result['calls'] > 0:
-                notify('First API call!',
-                       f'Someone is using your API. Total: {result["calls"]}')
+            if prev_total == 0 and total > 0:
+                notify('First API request!', f'Total: {total} | Subscribers: {subs}')
                 icon_name = 'green'
             elif delta > 0:
-                notify('New API calls',
-                       f'+{delta} calls. Total: {result["calls"]}')
+                notify(f'+{delta} API calls', f'Total: {total} | Subscribers: {subs}')
                 icon_name = 'green'
+            if subs > prev_subs:
+                notify('New subscriber!', f'Total subscribers: {subs}')
+                icon_name = 'green'
+            state['last_total_requests'] = total
+            state['last_subscribers'] = subs
+            save_metrics_file(m)
+            save_state(state)
             if icon:
                 try:
                     icon.icon = load_icon(icon_name)
-                    icon.title = f'TNT Monitor | calls: {result["calls"]} | last: {datetime.now().strftime("%H:%M")}'
-                except Exception:
-                    pass
-            state['last_calls'] = result['calls']
-            save_state(state)
-        # wait interval
+                    icon.title = f'TNT | calls: {total} | subs: {subs}'
+                except Exception: pass
         for _ in range(interval_min * 60):
-            if stop_event.is_set():
-                return
+            if stop_event.is_set(): return
             time.sleep(1)
 
 
-# ---------- Tray ----------
 def run_tray():
     import pystray
     from pystray import Menu, MenuItem
-
     stop_event = threading.Event()
     icon_ref = [None]
 
-    def on_open_dashboard(icon, item):
+    def open_dashboard(icon, item):
         import webbrowser
-        webbrowser.open('https://rapidapi.com/provider/12332384/apis/invoice-to-json-extractor1/analytics')
-
-    def on_open_hub(icon, item):
+        webbrowser.open(f'{API_BASE}/metrics')
+    def open_hub(icon, item):
         import webbrowser
         webbrowser.open('https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1')
-
-    def on_check_now(icon, item):
+    def check_now(icon, item):
         def _run():
             log('manual check')
-            r = check_rapidapi()
-            if r:
+            m = fetch_metrics(load_config())
+            if m:
                 notify('Manual check',
-                       f'Calls: {r["calls"]} | Errors: {r["error_rate"]}% | Latency: {r["latency_ms"]}ms')
+                       f'Calls: {m["total_requests"]} | Errors: {m["error_rate_pct"]}% | Subs: {m["unique_subscribers"]}')
             else:
-                notify('Check failed', 'Chrome CDP chưa mở hoặc chưa login RapidAPI. Xem log.')
+                notify('Check failed', 'See logs.')
         threading.Thread(target=_run, daemon=True).start()
-
-    def on_open_logs(icon, item):
-        os.startfile(str(LOGS))
-
-    def on_open_metrics(icon, item):
-        os.startfile(str(METRICS))
-
-    def on_open_readme(icon, item):
-        readme = TRAY / 'README.md'
-        if readme.exists():
-            os.startfile(str(readme))
-
-    def on_quit(icon, item):
-        log('quit requested')
-        stop_event.set()
-        icon.stop()
+    def open_logs(icon, item): os.startfile(str(LOGS))
+    def open_metrics(icon, item): os.startfile(str(METRICS_DIR))
+    def open_readme(icon, item):
+        p = TRAY / 'README.md'
+        if p.exists(): os.startfile(str(p))
+    def quit_(icon, item):
+        log('quit requested'); stop_event.set(); icon.stop()
 
     menu = Menu(
-        MenuItem('Check now', on_check_now, default=True),
+        MenuItem('Check now', check_now, default=True),
         Menu.SEPARATOR,
-        MenuItem('Open RapidAPI dashboard', on_open_dashboard),
-        MenuItem('Open public API page', on_open_hub),
+        MenuItem('Open /metrics', open_dashboard),
+        MenuItem('Open RapidAPI Hub', open_hub),
         Menu.SEPARATOR,
-        MenuItem('Open logs', on_open_logs),
-        MenuItem('Open metrics', on_open_metrics),
-        MenuItem('Help / README', on_open_readme),
+        MenuItem('Open logs', open_logs),
+        MenuItem('Open metrics', open_metrics),
+        MenuItem('Help', open_readme),
         Menu.SEPARATOR,
-        MenuItem('Quit', on_quit),
+        MenuItem('Quit', quit_),
     )
-
     icon = pystray.Icon('tnt-monitor', load_icon('default'), 'TNT Monitor', menu)
     icon_ref[0] = icon
     threading.Thread(target=monitor_loop, args=(stop_event, icon_ref), daemon=True).start()
-    log('tray started')
+    log('tray v3 started (metrics endpoint)')
     icon.run()
 
 
