@@ -75,7 +75,7 @@ class MetricsTracker:
                     avg_latency[k] = round(sum(vals) / len(vals), 1)
                     p95_latency[k] = self._percentile(vals, 95)
                     p99_latency[k] = self._percentile(vals, 99)
-            err_rate = (self.total_errors / self.total_requests * 100.0)
+            err_rate = (self.total_errors / self.total_requests * 100.0) if self.total_requests else 0.0
             return {
                 'uptime_seconds': uptime_s,
                 'uptime_human': self._human(uptime_s),
