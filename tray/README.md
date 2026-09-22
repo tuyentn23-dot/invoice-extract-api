@@ -1,84 +1,111 @@
-# TNT Monitor — system tray app
+# TNT Monitor — system tray app (v3)
 
-Tự động giám sát RapidAPI analytics, báo toast khi có traffic mới. Chạy nền, không hiện console.
+Tự động giám sát API metrics, báo toast khi có traffic. Chạy nền, không console.
+
+**Khác biệt v3:** Không scrape RapidAPI nữa — gọi trực tiếp `/metrics` endpoint của backend. Nhanh hơn, ổn định hơn, không cần Chrome CDP.
 
 ## Cách dùng
 
-### Lần đầu
+### Chạy lần đầu
 ```powershell
 cd D:\TNT_AI\venture_foundry\rapidapi_extract
 .\tray\start_monitor.bat
 ```
-Sẽ thấy icon **TNT** trong khay hệ thống (góc phải dưới, có thể ẩn trong mũi tên mở rộng).
+Icon **TNT** xuất hiện trên khay hệ thống.
 
-### Menu chuột phải trên icon
-- **Check now** — kiểm tra ngay (mặc định khi click trái)
-- **Open RapidAPI dashboard** — mở analytics
-- **Open public API page** — mở Hub listing
-- **Open logs folder** — xem log
-- **Open metrics folder** — xem reports
+### Menu chuột phải
+- **Check now** — kiểm tra ngay (click trái cũng được)
+- **Open /metrics** — mở metrics JSON trên browser
+- **Open RapidAPI Hub** — API public page
+- **Open logs** — xem log
+- **Open metrics** — xem reports folder
+- **Help** — mở README này
 - **Quit** — thoát
 
-### Auto-start khi boot
-Đã cài sẵn shortcut `TNT-Monitor.lnk` vào Startup folder. Lần sau mở máy sẽ tự chạy.
+### Auto-start
+Đã cài shortcut trong Startup folder. Khởi động máy → tray tự chạy.
+Gỡ: xóa `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\TNT-Monitor.lnk`
 
-Gỡ bỏ: xóa file `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\TNT-Monitor.lnk`
+## Không cần gì thêm
 
-## Yêu cầu
-
-Tray cần **Chrome đang mở với cổng debug 9222** để lấy analytics. Nếu Chrome đóng, tray vẫn chạy nhưng chỉ ghi log lỗi.
-
-Mở Chrome debug:
-```powershell
-Start-Process 'C:\Program Files\Google\Chrome\Application\chrome.exe' -ArgumentList '--remote-debugging-port=9222','--user-data-dir=D:\TNT_AI\venture_foundry\rapidapi_extract\.chrome_debug'
+**Không cần Chrome.** Tray gọi trực tiếp:
+```
+GET https://invoice-extract-api-4eq9.onrender.com/metrics
 ```
 
-Đăng nhập RapidAPI 1 lần — session lưu lại.
+Backend tự đếm: per-endpoint calls, per-subscriber usage, latency p95/p99.
+
+## Metrics backend trả về
+
+```json
+{
+  "uptime_human": "2h 15m",
+  "total_requests": 42,
+  "total_errors": 1,
+  "error_rate_pct": 2.38,
+  "endpoint_counts": {"POST /v1/invoice/extract": 30, ...},
+  "endpoint_errors": {"POST /v1/invoice/extract": 1},
+  "status_codes": {"200": 41, "400": 1},
+  "avg_latency_ms": {...},
+  "p95_latency_ms": {...},
+  "p99_latency_ms": {...},
+  "subscribers": {"user123": 15, "user456": 27},
+  "subscriber_last_seen": {"user123": "2026-09-22T13:00:00", ...},
+  "unique_subscribers": 2,
+  "daily": {"2026-09-22": 42}
+}
+```
+
+Subscriber ID lấy từ header `X-RapidAPI-User` mà RapidAPI tự gửi.
+
+## Icon màu
+
+- 🟡 **Vàng** — idle, chưa có traffic mới
+- 🟢 **Xanh** — có call mới HOẶC có subscriber mới
+- 🔴 **Đỏ** — backend không phản hồi (Render sleep, lỗi mạng, v.v.)
+
+Hover icon để xem: `TNT | calls: N | subs: M`
 
 ## Config
 
 `tray/config.json`:
-- `check_interval_minutes`: 60 (mặc định 1 giờ/lần)
-- `notify_on_new_calls`: true
-- `notify_on_error_rate_above`: 5.0 (%)
-- `chrome_cdp_port`: 9222
-
-Sửa interval thành 15 hoặc 30 nếu muốn check thường xuyên hơn.
-
-## Files
-
-- `monitor_tray.py` — app chính
-- `start_monitor.bat` — chạy ẩn (khuyến nghị)
-- `install_startup.bat` — cài auto-start
-- `config.json` — cấu hình
-- `state.json` — state tự lưu (không sửa)
-- `logs/YYYY-MM.log` — log theo tháng
-- `icon.png` — icon tray
-
-## Metrics output
-
-`metrics/YYYY-MM-DD.json` — mỗi ngày 1 file, chứa:
 ```json
 {
-  "timestamp": "2026-09-22T12:30:00",
-  "calls": 0,
-  "error_rate": 0.0,
-  "latency_ms": 0.0
+  "check_interval_minutes": 15,
+  "notify_on_new_calls": true,
+  "notify_on_new_subscribers": true,
+  "admin_token": ""
 }
 ```
 
-## Notifications
+- `check_interval_minutes`: 15 (mặc định). Có thể để 5 hoặc 60.
+- `admin_token`: **chỉ cần** nếu backend đặt biến môi trường `ADMIN_TOKEN` trên Render. Khi đó `/metrics` yêu cầu `Authorization: Bearer <token>`.
 
-Khi có traffic mới:
-- **Lần đầu tiên có call**: "First API call! Someone is using your API. Total: N"
-- **Có call mới**: "+N calls since last check. Total: M"
+## Files
+
+- `monitor_tray.py` — app chính (v3)
+- `start_monitor.bat` — chạy ẩn
+- `install_startup.bat` — cài auto-start
+- `config.json` — cấu hình
+- `state.json` — state runtime (không track git)
+- `logs/YYYY-MM.log` — log
+- `icon*.png` — icon
 
 ## Troubleshooting
 
-**Icon không hiện**: Windows 11 ẩn tray icon mặc định. Bấm mũi tên `^` ở khay, kéo TNT icon ra ngoài.
+**Icon không thấy:** Windows 11 ẩn tray icon. Bấm `^` ở khay, kéo TNT icon ra.
 
-**Check failed**: Chrome chưa mở hoặc chưa login RapidAPI. Mở Chrome debug, login, chờ kỳ check tiếp theo.
+**Icon đỏ liên tục:** Backend đang sleep (Render free tier ngủ sau 15 phút). Gọi thử 1 lần vào backend sẽ đánh thức.
 
-**Xem log**: chuột phải icon → Open logs folder.
+**Notifications không hiện:** Windows Focus Assist có thể đang bật. Tắt tạm.
 
-**Muốn thoát hẳn**: chuột phải icon → Quit. Nếu không thấy icon, kill process: `Get-Process pythonw | Where-Object {$_.Path -like '*pythonw*'} | Stop-Process`
+**Muốn thoát:** chuột phải icon → Quit. Nếu không thấy icon:
+```
+Get-CimInstance Win32_Process -Filter "name='pythonw.exe'" | Where-Object {$_.CommandLine -like '*monitor_tray*'} | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+```
+
+## Changelog
+
+- **v3** (2026-09-22) — Poll `/metrics` endpoint thay vì scrape RapidAPI. Không cần Chrome CDP. Interval 15 phút.
+- **v2** (2026-09-22) — Color icons, chrome_guard.
+- **v1** (2026-09-22) — Scrape RapidAPI analytics qua Playwright.
