@@ -1,74 +1,55 @@
-# Build Status — v1.3
+# Build Status — v1.3 LIVE
 
-## Đã build xong 100%
+## 🎉 ĐÃ LIVE TRÊN RAPIDAPI
 
-### 4 API endpoints (8 routes với base64)
-- `POST /v1/invoice/extract` — Invoice EN + VI
-- `POST /v1/invoice/extract/base64` — PDF/ảnh invoice
-- `POST /v1/receipt/extract` — Receipt
-- `POST /v1/receipt/extract/base64`
-- `POST /v1/resume/extract` — CV/Resume
-- `POST /v1/resume/extract/base64`
-- `POST /v1/bank-statement/extract` — Bank statement
-- `POST /v1/bank-statement/extract/base64`
+**Public URL:** https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
+**Backend:** https://invoice-extract-api-4eq9.onrender.com
+**Repo:** https://github.com/tuyentn23-dot/invoice-extract-api
 
-### Engine
-- Heuristic regex: chạy $0, không cần API key, EN + VI
-- LLM fallback (DeepSeek/Groq/Gemini) — tự động kích hoạt nếu key OK
-- PDF extraction: pdfplumber
-- Image OCR: pytesseract
-- RapidAPI proxy secret middleware
+## Verified
 
-### Test
-- 23 checks, all PASS (`python tests/test_all_endpoints.py`)
-- 4 document types × EN/VI
-- Error handling
+- ✅ Playground test: **200 OK** (test qua RapidAPI infrastructure)
+- ✅ 10 endpoints imported (root, health, 8 v1 extraction)
+- ✅ 4 document types: invoice, receipt, resume, bank statement
+- ✅ Bilingual EN/VI
+- ✅ Base URL configured
+- ✅ Pricing: Basic $0 (500 req/mo)
+- ✅ Public visibility
+- ✅ 29 unit tests pass
 
-### Deploy
-- Dockerfile
-- render.yaml (Render free tier)
-- requirements.txt (đủ deps)
-- openapi.yaml
+## Files trong repo
 
-### Docs
-- README.md — listing copy
-- DEPLOY.md — 4 bước, 20 phút
-- LAUNCH_KIT.md — copy-paste cho 7 kênh
+- `app/` — FastAPI code (heuristic + LLM fallback)
+- `tests/` — 29 test checks
+- `scripts/` — Playwright automation (gitignored)
+- `README.md` — listing copy
+- `DEPLOY.md` — full deploy guide
+- `LAUNCH_NOW.md` — ⭐ **copy-paste launch content cho 6 kênh**
+- `SECURITY_TODO.md` — proxy secret setup
+- `DEPLOYED_URLS.txt` — tất cả URLs + IDs
+- `Dockerfile`, `render.yaml`, `openapi.yaml`
 
-### Git
-- 4 commits local
+## Next: LAUNCH
 
-## Blocker — cần bạn
+Mở `LAUNCH_NOW.md`, đăng lần lượt:
+1. Hacker News (Show HN) — 20:00 giờ VN
+2. Reddit r/SaaS — 30 phút sau
+3. Reddit r/webdev
+4. Indie Hackers
+5. Twitter/X
+6. Reddit r/Accounting
 
-Đây là 3 việc **chỉ bạn làm được** (đều cần account cá nhân):
+## Metrics to watch (RapidAPI dashboard)
 
-- [ ] **1. Push GitHub** — DEPLOY.md bước 1 (2 phút)
-- [ ] **2. Deploy Render** — DEPLOY.md bước 2 (5 phút)
-- [ ] **3. List RapidAPI** — DEPLOY.md bước 3 (10 phút)
-- [ ] **4. Chờ duyệt** — 1-3 ngày
-- [ ] **5. Launch** — LAUNCH_KIT.md
-
-## Sau khi API live
-
-Paste URL RapidAPI vào chat. Tôi sẽ:
-1. Sinh tracking sheet để đo subscriber/calls
-2. Chuẩn bị API #5 (purchase order) + #6 (contract)
-3. Viết monitoring script (báo khi có subscriber đầu tiên)
-4. Viết follow-up Reddit/HN nếu 7 ngày không có traction
+- Test calls/tuần
+- Subscribers (free + paid)
+- MRR
 
 ## Ngưỡng quyết định
 
 | Mốc | Đo | Hành động |
 |---|---|---|
-| D+7 | ≥ 10 test calls | tiếp tục |
-| D+30 | ≥ 3 subscriber trả tiền | build API #5-6 |
-| D+30 | 0 subscriber | giữ API chạy, đổi hướng list chợ khác |
-| D+90 | MRR < $100 | pivot nền tảng (Replicate/HF) |
-
-## Chi phí
-
-**$0** cho tới khi có subscriber. RapidAPI thu 25% doanh thu — không phí đăng.
-
-## Repo path
-
-`D:/TNT_AI/venture_foundry/rapidapi_extract/`
+| 7 ngày | ≥10 test calls | tiếp tục |
+| 30 ngày | ≥1 paid subscriber | build API #5, #6 |
+| 30 ngày | 0 subscriber | giữ, đổi kênh traffic |
+| 90 ngày | MRR <$100 | pivot |

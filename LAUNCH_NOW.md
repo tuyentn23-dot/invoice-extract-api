@@ -1,18 +1,18 @@
-# LAUNCH NOW — Copy paste theo thứ tự
+# 🚀 LAUNCH NOW — Copy paste từng bài
 
-**URL API:** https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
+**API URL:** https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
 
-**Nguyên tắc:** Đăng 1 chỗ, đợi 2 giờ, xem phản hồi, mới đăng chỗ tiếp. KHÔNG spam cùng lúc.
+**Đăng theo thứ tự này. Mỗi bài cách nhau 30 phút (tránh bị flag spam).**
 
 ---
 
-## 1. HACKER NEWS (đăng đầu tiên — impact cao nhất)
+## 📌 1. HACKER NEWS (Show HN) — 9:00 sáng giờ US (20:00 VN)
 
-**Vào:** https://news.ycombinator.com/submit
+**Mở:** https://news.ycombinator.com/submit
 
 **Title:**
 ```
-Show HN: Document extraction API – invoice/receipt/resume to JSON
+Show HN: Document extraction API – invoice/receipt/resume to JSON, bilingual
 ```
 
 **URL:**
@@ -20,150 +20,144 @@ Show HN: Document extraction API – invoice/receipt/resume to JSON
 https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
 ```
 
-**Text (optional):**
+**Text (optional, để trống cũng được):**
 ```
-Built this because I kept writing the same invoice-parsing code on every project. Decided to make it a public API instead.
+Hi HN, I built a small document extraction API after seeing how many SaaS charge $0.10-0.50 per document extraction.
 
-Four endpoints: invoice, receipt, resume, bank statement. Text in, structured JSON out. Bilingual (English + Vietnamese).
+It extracts:
+- Invoices: invoice number, dates, vendor, VAT, subtotal, tax, total, line items
+- Receipts: store, date, items, payment method
+- Resumes: name, contacts, skills, experience, education
+- Bank statements: transactions, balances
 
-The base path runs a regex heuristic engine – no LLM call, sub-second response, zero ongoing cost. Falls back to an LLM only when the heuristic can't parse something clean.
+Bilingual (English + Vietnamese). Uses a heuristic engine first (no LLM cost), falls back to LLM only when needed.
 
-Built solo in a weekend. Deployed on Render free tier. Billing handled by RapidAPI.
-
-Would love feedback on: (1) missing fields, (2) other document types worth adding, (3) heuristic vs LLM tradeoffs.
+Available on RapidAPI with a free tier (500 requests/month). Feedback welcome.
 ```
-
-**Sau khi submit:** Reply mọi comment trong 2 giờ đầu. Không spam, không defensive.
 
 ---
 
-## 2. REDDIT r/SaaS (đăng 2h sau HN)
+## 📌 2. Reddit r/SaaS — 30 phút sau
 
-**Vào:** https://www.reddit.com/r/SaaS/submit
+**Mở:** https://www.reddit.com/r/SaaS/submit
 
 **Title:**
 ```
-I built a document extraction API solo in a weekend – invoice/receipt/resume → JSON
+Built a document extraction API solo — invoice/receipt/resume → JSON (bilingual)
 ```
 
 **Body:**
 ```
-I kept rewriting invoice parsing code on every project, so I made it a public API instead.
+Spent a weekend building this. Started because I kept seeing "AI document extraction" startups raise money for something that felt like a weekend project.
 
 What it does:
-- 4 endpoints: invoice, receipt, resume, bank statement
-- Text or base64 PDF/image in → clean JSON out
+- POST text → structured JSON
+- 4 endpoints: invoices, receipts, resumes, bank statements
 - Bilingual (EN + VI)
-- Free tier: 500 calls/month
-- Response < 1s typical
+- Free tier: 500 req/month
 
-How it works:
-- Regex heuristic engine first (zero LLM cost, sub-second)
-- Falls back to LLM only when regex fails
-- FastAPI + Pydantic, deployed on Render free tier
-- RapidAPI handles billing
+Tech: FastAPI + heuristic regex engine for the base path ($0 cost), LLM fallback for edge cases. Deployed on Render free tier. Billing handled by RapidAPI.
 
-What it doesn't do:
-- No dashboard UI
-- OCR on the free tier requires clean text (base64 works but needs pdfplumber/pytesseract installed server-side)
-
-Would love feedback on what fields you'd actually need, and which document types to add next.
-
-Link: https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
-```
-
----
-
-## 3. REDDIT r/webdev (đăng 4h sau r/SaaS)
-
-**Title:**
-```
-Made a small API for extracting structured data from documents (invoice/receipt/resume)
-```
-
-**Body:** Copy từ r/SaaS ở trên, đổi câu cuối thành:
-```
-Feedback welcome on the heuristic-first approach vs going straight to an LLM.
-```
-
----
-
-## 4. TWITTER/X (đăng cùng ngày)
-
-```
-Launched a small API: invoice, receipt, resume, bank statement → clean JSON.
-
-Bilingual EN/VI. Response < 1s. Free tier 500 calls/mo.
-
-Built solo + AI in a weekend, deployed for $0.
+No signup needed beyond a RapidAPI account. Try it and tell me what fields are missing.
 
 https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
 ```
 
 ---
 
-## 5. INDIEE HACKERS (đăng trong tuần)
-
-**Vào:** https://www.indiehackers.com/new-post
+## 📌 3. Reddit r/webdev — 30 phút sau
 
 **Title:**
 ```
-Document extraction API – $0 to launch, aiming for $100 MRR
+Made a small API that turns invoice/receipt text into JSON (free tier)
 ```
 
 **Body:**
 ```
-Weekend project. Built 4 document extraction endpoints (invoice/receipt/resume/bank statement).
+Sharing a side project — invoice/receipt/resume/bank-statement → JSON API.
 
-Stack: FastAPI + heuristic regex engine (no LLM for base path), RapidAPI for billing, Render free tier for hosting. Total cost so far: $0.
+Uses FastAPI + Pydantic. Heuristic engine (regex) for base extraction, so it's fast and free. LLM fallback when patterns fail. Deployed on Render.
 
-Goal: $100 MRR. Current: $0 (just launched).
+Free tier: 500 requests/month on RapidAPI.
 
-Plan:
-- W1: launch, measure
-- W2-4: add 2 more endpoints if traction
-- M2: if 1+ paying subscriber, expand
-
-Will post updates.
-
-Link in comments.
+https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
 ```
 
 ---
 
-## Thứ tự thực hiện
+## 📌 4. Indie Hackers — 30 phút sau
 
-**Hôm nay:**
-1. Hacker News (bây giờ)
-2. Reply comment HN trong 2h
+**Mở:** https://www.indiehackers.com/new-post
 
-**Sau 2h:**
-3. r/SaaS
-4. Reply comment
+**Title:**
+```
+Launched a document extraction API — $0 startup cost
+```
 
-**Tối:**
-5. Twitter/X
+**Body:**
+```
+Just launched on RapidAPI. Goal: hit $100 MRR with zero upfront cost.
 
-**Mai:**
-6. r/webdev
-7. Indie Hackers
+Product: invoice/receipt/resume/bank-statement → JSON API
+Stack: FastAPI + heuristic engine + LLM fallback, deployed on Render free tier
+Billing: RapidAPI (no Stripe integration needed)
 
----
+Cost so far: $0
+Revenue so far: $0 (just launched)
 
-## Đo lường
+Will post updates weekly.
 
-Sau 24h, mở RapidAPI dashboard → Analytics:
-- Xem **Test calls** (số request)
-- Xem **Subscribers** (số người dùng free tier)
-
-Paste số liệu vào đây, tôi sẽ phân tích và đề xuất bước tiếp.
+https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
+```
 
 ---
 
-## KHÔNG nên làm
+## 📌 5. Twitter/X — cuối ngày
 
-- ❌ Đăng cùng lúc 5 chỗ (bị flag spam)
-- ❌ DM người lạ
-- ❌ Mua upvote
-- ❌ Đổi title thành clickbait
-- ❌ Nói "AI-powered" nếu base path là heuristic
+```
+Launched a small document extraction API today.
+
+Invoice/receipt/resume/bank-statement text → JSON.
+Bilingual EN/VI.
+Free tier.
+
+Built solo + AI in a weekend. Feedback welcome.
+
+https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
+```
+
+---
+
+## 📌 6. Reddit r/Accounting, r/smallbusiness, r/Bookkeeping
+
+**Title:**
+```
+Free tool: extract invoice data to JSON (no signup beyond RapidAPI)
+```
+
+**Body:**
+```
+Built this for my own projects. Paste invoice text, get structured JSON back:
+- Invoice number, dates
+- Vendor, customer, tax IDs
+- Subtotal, tax, total, line items
+
+Supports English and Vietnamese. Free tier 500 calls/month.
+
+https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
+```
+
+---
+
+## QUY TẮC
+
+1. Đăng **1 bài, đợi 30 phút** rồi đăng bài kế
+2. Không tự vote, không nhờ bạn bè vote (HN/Reddit phát hiện)
+3. Trả lời MỌI comment trong 24h đầu
+4. Nếu bị downvote → không xóa, không argue
+5. Ghi lại: bài nào có traffic cao nhất
+
+## Sau khi đăng
+
+- Paste link bài HN/Reddit vào chat — tôi sẽ giúp theo dõi reply
+- Nếu có người hỏi feature mới → tôi build trong 30 phút
