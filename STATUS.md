@@ -1,45 +1,45 @@
-# Build Status — COMPLETE ✅
+# ✅ COMPLETE — Đang chờ khách
 
-## API HOÀN TOÀN LIVE & SẴN SÀNG KIẾM TIỀN
+## API HOÀN TOÀN SẴN SÀNG KIẾM TIỀN
 
 **Public URL:** https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1
 **Backend:** https://invoice-extract-api-4eq9.onrender.com
 **Repo:** https://github.com/tuyentn23-dot/invoice-extract-api
 
-## Vòng lặp kiếm tiền — 100% khép kín
+## Vòng lặp kiếm tiền — 100% KHÉP KÍN
 
-| Khâu | Trạng thái | Chi tiết |
-|---|---|---|
-| Viết code | ✅ | FastAPI, 4 document types, 10 endpoints |
-| Đăng backend | ✅ | Render free tier |
-| Đăng API | ✅ | RapidAPI public |
-| Người mua tìm | ✅ | Searchable trên Hub |
-| Trả tiền | ✅ | RapidAPI billing |
-| **Tiền về tay** | ✅ | **PayPal: tuyentn23@gmail.com — Ready** |
-| Lặp lại | ✅ | Auto-renew subscription |
+| Khâu | Trạng thái |
+|---|---|
+| Viết code | ✅ FastAPI, 10 endpoints, 4 document types |
+| Deploy backend | ✅ Render free tier |
+| List API | ✅ RapidAPI public |
+| Discovery | ✅ Searchable trên Hub |
+| **Pricing** | ✅ **4 gói: BASIC Free, PRO $9, ULTRA $29, MEGA $99** |
+| **Payout** | ✅ **PayPal: tuyentn23@gmail.com — Ready** |
+| Auto-renew | ✅ Subscription tự động |
 
 ## Verified
-
 - ✅ Playground test: 200 OK
 - ✅ 10 endpoints imported
-- ✅ 4 loại tài liệu: invoice, receipt, resume, bank statement
+- ✅ 4 document types: invoice, receipt, resume, bank statement
 - ✅ Bilingual EN/VI
-- ✅ Free tier: Basic 500 req/month
-- ✅ PayPal linked & Ready
 - ✅ 29 unit tests pass
+- ✅ 4 pricing tiers live (PRO = Recommended)
+- ✅ PayPal linked
 
-## Việc duy nhất còn lại: LAUNCH
+## VIỆC DUY NHẤT CÒN LẠI: LAUNCH
 
-**Mở `LAUNCH_NOW.md`** — nội dung copy-paste cho 6 kênh:
-
-1. Hacker News Show HN
+Mở `LAUNCH_NOW.md` — nội dung copy-paste cho 6 kênh:
+1. **Hacker News Show HN** ← quan trọng nhất, làm trước
 2. Reddit r/SaaS
 3. Reddit r/webdev
 4. Indie Hackers
 5. Twitter/X
-6. Reddit r/Accounting & r/smallbusiness
+6. Reddit r/Accounting, r/smallbusiness
 
-## Đo lường (chạy hàng ngày)
+**Đăng xong 1 kênh, chờ 30 phút, đăng kênh kế.**
+
+## Đo lường
 
 ```
 python scripts/monitor.py
@@ -58,4 +58,4 @@ Report lưu vào `metrics/report_<ngày>.json`
 
 ## Chi phí
 
-**$0** — mọi thứ free tier cho đến khi có subscriber đầu tiên.
+**$0** — chưa tốn đồng nào. Doanh thu đầu tiên = lãi ròng.
