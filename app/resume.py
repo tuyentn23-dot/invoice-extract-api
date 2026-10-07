@@ -35,6 +35,9 @@ def _detect_sections(text: str) -> Dict[str, str]:
         if matched:
             current = matched
             sections.setdefault(current, [])
+            ci = s.find(':')
+            if ci >= 0 and s[ci + 1:].strip():
+                sections[current].append(s[ci + 1:].strip())
         else:
             sections.setdefault(current, []).append(line)
     return {k: '\n'.join(v).strip() for k, v in sections.items()}
