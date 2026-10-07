@@ -1,54 +1,120 @@
-# Invoice Extraction API — RapidAPI Listing Package
+# Invoice to JSON Extractor API
+
+Convert invoices, receipts, resumes, bank statements and more into clean structured JSON - no LLM key required.
+
+Live on RapidAPI: Invoice to JSON Extractor
+
+Backend: https://invoice-extract-api-4eq9.onrender.com 
+Health: https://invoice-extract-api-4eq9.onrender.com/health 
+API docs: https://invoice-extract-api-4eq9.onrender.com/docs
+
+---
 
 ## What it does
-Extract structured JSON from raw invoice text (EN, VI, and others).
-LLM-optional: uses LLM if key works, falls back to a zero-cost regex heuristic.
 
-## Endpoints
-- `POST /v1/invoice/extract` — main extraction
-- `POST /v1/invoice/extract/base64` — same, for base64 PDF/image text
-- `GET /health` — health
-- `GET /docs` — OpenAPI UI
+Extract structured JSON from 8+ document types in one API. Bilingual English / Vietnamese. Fast rule-based extractor with optional LLM fallback. Typical response under 1 second.
+
+| Document | Endpoint |
+|---|---|
+| Invoice | `POST /v1/invoice/extract` |
+| Receipt | `POST /v1/receipt/extract` |
+| Resume / CV | `POST /v1/resume/extract` |
+| Bank statement | `POST /v1/bank-statement/extract` |
+| Purchase order | `POST /v1/purchase-order/extract` |
+| Contract | `POST /v1/contract/extract` |
+| Business card | `POST /v1/business-card/extract` |
+| Utility bill | `POST /v1/utility-bill/extract` |
+
+Every endpoint also has a `/base64` variant for images and PDFs (OCR via Tesseract).
+
+---
+
+## Quick start
+
+### curl
+
+```bash
+curl -X POST https://invoice-extract-api-4eq9.onrender.com/v1/invoice/extract \
+ -H "Content-Type: application/json" \
+ -d '{"content": "INVOICE #12345 Vendor: Acme Corp Total: 100.00 USD"}'
+```
+
+### Python
+
+```python
+import requests
+
+r = requests.post(
+ "https://invoice-extract-api-4eq9.onrender.com/v1/invoice/extract",
+ json={"content": "INVOICE #12345 Vendor: Acme Corp Total: 100.00 USD"},
+)
+print(r.json())
+```
+
+### Image / PDF (base64)
+
+```python
+import base64, requests
+
+b64 = base64.b64encode(open("invoice.png", "rb").read()).decode()
+r = requests.post(
+ "https://invoice-extract-api-4eq9.onrender.com/v1/invoice/extract/base64",
+ json={"content": b64, "content_type": "base64_image"},
+)
+print(r.json())
+```
+
+---
+
+## Example response
+
+```json
+{
+ "success": true,
+ "invoice": {
+ "invoice_number": "INV-2026-1042",
+ "invoice_date": "2026-10-07",
+ "currency": "USD",
+ "vendor_name": "Acme Supplies Ltd.",
+ "subtotal": 262.5,
+ "tax_amount": 26.25,
+ "total": 288.75,
+ "line_items": [{"description": "Item A", "quantity": 10, "amount": 150.0}],
+ "confidence": 0.9
+ },
+ "model": "heuristic:v1",
+ "processing_ms": 1
+}
+```
+
+---
+
+## Use cases
+
+- Accounting automation and bookkeeping
+- Expense management apps
+- E-commerce order and receipt parsing
+- KYC / onboarding from business cards and IDs
+- Loan and bank-statement analysis
+- SaaS invoice ingestion
+
+## Why this API
+
+- No LLM key required - works out of the box
+- Bilingual EN / VI, built for Southeast Asia
+- OCR for images and PDFs included
+- Fast: heuristic extraction in ~1ms
+- Simple JSON in / JSON out
 
 ## Run locally
-```
+
+```bash
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-## Test
-```
-python -c "from app.llm import extract_invoice; print(extract_invoice(open('tests/sample.txt').read()))"
-```
+Then open http://127.0.0.1:8000/docs
 
-## Deploy
-Dockerfile included. Push to Render/Fly/Railway.
+## License
 
-## Env vars (all optional)
-- `RAPIDAPI_PROXY_SECRET` — set after creating the RapidAPI listing, to reject non-RapidAPI calls.
-- `DEEPSEEK_API_KEY` / `GROQ_API_KEY` / `GEMINI_API_KEY` — if set, LLM path is used; otherwise heuristic.
-
-## Pricing plan (RapidAPI)
-- BASIC: 50 req/mo free
-- PRO: $9/mo — 2,000 req
-- ULTRA: $29/mo — 15,000 req
-- MEGA: $99/mo — 100,000 req
-
-## Listing copy
-
-**Title:** Invoice to JSON Extractor — AI-Powered, Bilingual
-
-**Short description (<=120 chars):**
-Convert any invoice text to structured JSON. Bilingual EN/VI. Vendor, dates, totals, line items.
-
-**Long description:**
-Paste invoice text, get clean JSON:
-- invoice_number, invoice_date, due_date, currency
-- vendor_name, vendor_tax_id, customer_name
-- subtotal, tax_amount, total
-- line_items (description, qty, unit_price, amount)
-- confidence score
-
-Works on English and Vietnamese invoices. No signup beyond RapidAPI. Response < 1s typical.
-
-**Tags:** invoice, ocr, pdf, extraction, json, ai, accounting, finance
+MIT
