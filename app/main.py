@@ -4,7 +4,7 @@ OpenAPI forced 3.0.3 for RapidAPI. Metrics built-in (no external tray needed).
 import os
 import time
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
 from fastapi.openapi.utils import get_openapi
 
 from app.schemas import ExtractRequest, ExtractResponse, Invoice
@@ -73,32 +73,40 @@ def health():
     }
 
 
-@app.get('/')
+@app.get('/', response_class=HTMLResponse)
 def root():
+    from pathlib import Path
+    p = Path(__file__).resolve().parent / 'landing.html'
+    try:
+        return HTMLResponse(p.read_text(encoding='utf-8'))
+    except Exception:
+        return HTMLResponse('<h1>Invoice to JSON Extractor</h1><p><a href="/docs">API docs</a></p>')
+
+
+@app.get('/info')
+def info():
     return {
         'name': 'Invoice to JSON Extractor',
         'version': VERSION,
-        'endpoints': {
-            'POST /v1/invoice/extract': 'Invoice -> JSON',
-            'POST /v1/invoice/extract/base64': 'Invoice (base64 PDF/image) -> JSON',
-            'POST /v1/receipt/extract': 'Receipt -> JSON',
-            'POST /v1/receipt/extract/base64': 'Receipt (base64) -> JSON',
-            'POST /v1/resume/extract': 'Resume/CV -> JSON',
-            'POST /v1/resume/extract/base64': 'Resume (base64) -> JSON',
-            'POST /v1/bank-statement/extract': 'Bank statement -> JSON',
-            'POST /v1/bank-statement/extract/base64': 'Bank statement (base64) -> JSON',
-            'POST /v1/purchase-order/extract': 'Purchase order -> JSON',
-            'POST /v1/contract/extract': 'Contract key terms -> JSON',
-            'POST /v1/business-card/extract': 'Business card -> JSON',
-            'POST /v1/utility-bill/extract': 'Utility bill -> JSON',
-            'POST /v1/delivery-note/extract': 'Delivery note -> JSON',
-            'POST /v1/id-document/extract': 'ID document -> JSON',
-            'GET /health': 'Health check',
-            'GET /metrics': 'Internal metrics (admin token required)',
-            'GET /docs': 'OpenAPI UI',
-        },
+        'docs': '/docs',
+        'health': '/health',
+        'listing': 'https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1',
     }
 
+
+@app.get('/robots.txt', response_class=PlainTextResponse)
+def robots_txt():
+    sm = 'https://invoice-extract-api-4eq9.onrender.com/sitemap.xml'
+    return 'User-agent: *' + chr(10) + 'Allow: /' + chr(10) + 'Sitemap: ' + sm + chr(10)
+
+
+@app.get('/sitemap.xml', response_class=PlainTextResponse)
+def sitemap_xml():
+    u = 'https://invoice-extract-api-4eq9.onrender.com/'
+    x = '<?xml version="1.0" encoding="UTF-8"?>'
+    x += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+    x += '<url><loc>' + u + '</loc></url></urlset>'
+    return x
 
 @app.get('/metrics')
 def metrics(request: Request):

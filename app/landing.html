@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invoice to JSON API - Extract Invoices, Receipts, Resumes to JSON (OCR, EN/VI)</title>
+<meta name="description" content="Free-to-try invoice OCR API. Convert invoices, receipts, resumes, bank statements and PDFs into clean structured JSON. Bilingual English/Vietnamese, OCR included.">
+<meta name="keywords" content="invoice to json, invoice ocr api, receipt parser, document extraction api, resume parser, bank statement parser, pdf to json, ocr api">
+<link rel="canonical" href="https://invoice-extract-api-4eq9.onrender.com/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebAPI", "name": "Invoice to JSON Extractor"}</script>
+<style>body{font-family:system-ui,sans-serif;margin:0;color:#111;line-height:1.6}.wrap{max-width:860px;margin:0 auto;padding:32px 20px}h1{font-size:2rem}h2{margin-top:2em;border-bottom:1px solid #eee}a{color:#0b5fff}pre{background:#0f172a;color:#e2e8f0;padding:16px;border-radius:8px;overflow:auto}table{border-collapse:collapse;width:100%}th,td{border:1px solid #e5e7eb;padding:8px;text-align:left}.cta{display:inline-block;background:#0b5fff;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;margin:8px 8px 8px 0}.muted{color:#666}</style>
+</head>
+<body><div class="wrap">
+<h1>Invoice to JSON API</h1>
+<p class="muted">Extract structured JSON from invoices, receipts, resumes, bank statements and more - with OCR, in English and Vietnamese.</p>
+<p><a class="cta" href="https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1">Get your API key on RapidAPI</a> <a class="cta" style="background:#111" href="/docs">API docs</a></p>
+<h2>What it does</h2>
+<p>Send raw text, an image or a PDF, and get back clean JSON: numbers, dates, vendor, totals and line items. No LLM key required. Typical response under 1 second.</p>
+<h2>Supported documents</h2>
+<table><tr><th>Document</th><th>Endpoint</th></tr>
+<tr><td>Invoice</td><td><code>POST /v1/invoice/extract</code></td></tr>
+<tr><td>Receipt</td><td><code>POST /v1/receipt/extract</code></td></tr>
+<tr><td>Resume / CV</td><td><code>POST /v1/resume/extract</code></td></tr>
+<tr><td>Bank statement</td><td><code>POST /v1/bank-statement/extract</code></td></tr>
+<tr><td>Purchase order</td><td><code>POST /v1/purchase-order/extract</code></td></tr>
+<tr><td>Contract</td><td><code>POST /v1/contract/extract</code></td></tr>
+<tr><td>Business card</td><td><code>POST /v1/business-card/extract</code></td></tr>
+<tr><td>Utility bill</td><td><code>POST /v1/utility-bill/extract</code></td></tr>
+</table>
+<p class="muted">Every endpoint has a <code>/base64</code> variant for images and PDFs (OCR included).</p>
+<h2>Quick start</h2>
+<pre><code>curl -X POST https://invoice-extract-api-4eq9.onrender.com/v1/invoice/extract -H "Content-Type: application/json" -d '{"content": "INVOICE #12345 Total: 100.00 USD"}'</code></pre>
+<h2>Why developers use it</h2>
+<ul><li>No LLM key required - works out of the box</li><li>Bilingual English / Vietnamese</li><li>OCR for images and PDFs included</li><li>Fast: heuristic extraction in about 1 ms</li><li>Simple JSON in / JSON out</li></ul>
+<h2>Use cases</h2>
+<ul><li>Accounting automation and bookkeeping</li><li>Expense management apps</li><li>E-commerce order and receipt parsing</li><li>KYC / onboarding from business cards and IDs</li><li>Loan and bank-statement analysis</li></ul>
+<h2>Get started</h2>
+<p>Create a free API key on <a href="https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1">RapidAPI</a> and call the API in minutes. Full reference at <a href="/docs">/docs</a>.</p>
+<footer>Invoice to JSON Extractor - <a href="https://github.com/tuyentn23-dot/invoice-extract-api">GitHub</a> - <a href="/health">Health</a></footer>
+</div></body></html>
