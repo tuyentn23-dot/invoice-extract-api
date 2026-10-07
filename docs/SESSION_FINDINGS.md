@@ -22,3 +22,10 @@
 ## 5. Tooling note
 - run_terminal/write_file sometimes give FABRICATED success output (commits that did not happen).
 - Always verify with .git/logs/HEAD and the live API.
+
+## 6. SEO landing page - LIVE
+- / now serves SEO HTML (title, meta description, keywords, JSON-LD, canonical).
+- /robots.txt (Allow all + Sitemap) and /sitemap.xml added.
+- Verified live: / -> 200 text/html (3886 bytes); /robots.txt -> 200.
+- Google sitemap ping endpoint deprecated (404); discovery via robots.txt.
+- /info now returns JSON metadata for API consumers.
