@@ -18,7 +18,7 @@ from app.business_card import extract_business_card_heuristic
 from app.utility_bill import extract_utility_bill_heuristic
 from app.delivery_note import extract_delivery_note_heuristic
 from app.id_document import extract_id_document_heuristic
-from app.pdf_ocr import decode_to_text
+from app.pdf_ocr import decode_to_text, ocr_status
 from app.openapi_compat import to_3_0_3
 from app.metrics import tracker
 
@@ -69,6 +69,7 @@ def health():
         'uptime_human': snap['uptime_human'],
         'total_requests': snap['total_requests'],
         'unique_subscribers': snap['unique_subscribers'],
+        'ocr': ocr_status(),
     }
 
 

@@ -68,3 +68,26 @@ def decode_to_text(b64_or_datauri: str) -> str:
         return data.decode('utf-8', errors='ignore')[:20000]
     except Exception:
         return ''
+
+def ocr_status() -> dict:
+    """Report OCR capability for diagnostics."""
+    out = {"pytesseract_import": False, "tesseract_binary": False, "tesseract_version": None, "pdfplumber_import": False, "pillow_import": False}
+    try:
+        import pytesseract
+        out["pytesseract_import"] = True
+        v = pytesseract.get_tesseract_version()
+        out["tesseract_binary"] = True
+        out["tesseract_version"] = str(v)
+    except Exception as e:
+        out["tesseract_error"] = repr(e)[:200]
+    try:
+        import pdfplumber
+        out["pdfplumber_import"] = True
+    except Exception:
+        pass
+    try:
+        from PIL import Image
+        out["pillow_import"] = True
+    except Exception:
+        pass
+    return out
