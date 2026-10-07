@@ -10,12 +10,12 @@ CONTRACT_NUM_P = re.compile(
 
 PARTY_KW_1 = ['between', 'party a', 'first party', 'ben phia', 'bên a']
 PARTY_KW_2 = ['and', 'party b', 'second party', 'bên b', 'ben b']
-EFFECTIVE_KW = ['effective date', 'effective', 'commencement', 'ngay hieu luc', 'ngày hiệu lực']
+EFFECTIVE_KW = ['effective date', 'date', 'effective', 'commencement', 'ngay hieu luc', 'ngày hiệu lực']
 EXPIRY_KW = ['expiry', 'expiration', 'end date', 'termination', 'het han', 'hết hạn']
 TERM_KW = ['term', 'duration', 'thoi han', 'thời hạn']
 PAYMENT_TERM_KW = ['payment term', 'net ', 'thanh toan trong', 'thanh toán trong']
 GOVERNING_KW = ['governing law', 'jurisdiction', 'luat ap dung', 'luật áp dụng']
-VALUE_KW = ['total value', 'contract value', 'consideration', 'gia tri hop dong', 'giá trị hợp đồng']
+VALUE_KW = ['total value', 'value', 'contract value', 'consideration', 'gia tri hop dong', 'giá trị hợp đồng']
 
 
 def _find_field(text: str, keywords: List[str]) -> Optional[str]:
