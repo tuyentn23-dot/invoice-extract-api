@@ -1,7 +1,7 @@
 # Root Cause: 422 on /v1/*/extract/base64
 
 Date: 2026-10-07 
-Status: FIXED (pending deploy) 
+Status: VERIFIED FIXED (deployed 2026-10-07) 
 
 ## Symptom
 POST /v1/invoice/extract/base64 returns 422 {"detail":"Could not extract text from base64"} for a valid A4 invoice image.
@@ -28,3 +28,8 @@ curl https://invoice-extract-api-4eq9.onrender.com/health
 # expect: "ocr":{"pytesseract_import":true,"tesseract_binary":true,...}
 
 If tesseract_binary is still false, the deploy did not pick up the Docker runtime.
+
+## Verification (live)
+
+- /health -> "ocr":{"pytesseract_import":true,"tesseract_binary":true,"tesseract_version":"5.5.0","pdfplumber_import":true,"pillow_import":true}
+- POST /v1/invoice/extract/base64 with a generated A4 PNG -> 200 OK, extracted invoice_number, date, vendor, total correctly.
