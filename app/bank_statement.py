@@ -108,9 +108,7 @@ def extract_bank_statement_heuristic(text: str, language: Optional[str] = None) 
     filled = sum(1 for x in [account, currency, opening, closing, txns] if x)
     conf = round(min(1.0, filled / 5.0) * 0.85, 2)
     if period_end is None:
-        _ws = _dates_in_window(text[:500])
-        if len(_ws) >= 2:
-            period_end = _ws[-1]
+        period_end = _find_first_date(text)
     return {
         'account_number': account,
         'currency': currency,
