@@ -88,17 +88,78 @@ def extract_receipt_heuristic(text: str, language: Optional[str] = None) -> Dict
                 tax = v
     currency = _find_currency(text)
     payment = _find_payment_method(text)
-    items = _find_items(text)
+    items = _find_items(text) or _find_labeled_items(text)
     filled = sum(1 for x in [store, date, total, currency] if x)
     conf = round(min(1.0, filled / 4.0) * 0.85, 2)
     return {
         'store_name': store,
         'date': date,
         'currency': currency,
-        'subtotal': None,
+        'subtotal': _find_subtotal(text),
         'tax_amount': tax,
         'total': total,
         'payment_method': payment,
         'items': items,
         'confidence': conf,
     }
+
+
+SUB_KW = ['subtotal', 'sub total', 'sub-total', 'net', 'tam tinh']
+
+
+def _find_subtotal(text):
+    for line in text.splitlines():
+        low = line.lower()
+        if any(k in low for k in SUB_KW):
+            v = _money_in_line(line)
+            if v is not None:
+                return v
+    return None
+
+
+def _find_labeled_items(text):
+    items = []
+    seen = set()
+    for line in text.splitlines():
+        low = line.lower()
+        if 'qty' not in low and 'quantity' not in low:
+            continue
+        if not ('item:' in low or 'item #' in low or 'product:' in low):
+            continue
+        nums = [m.group(0) for m in re.finditer(NUM_RE, low)]
+        if len(nums) < 2:
+            continue
+        qty = None
+        amount = None
+        try:
+            if len(nums) >= 3:
+                qty = _to_float(nums[0])
+                amount = _to_float(nums[2])
+            else:
+                amount = _to_float(nums[0])
+        except Exception:
+            continue
+        if amount is None or amount == 0:
+            continue
+        desc = line
+        idx = desc.lower().find('item')
+        if idx >= 0:
+            desc = desc[idx+5:]
+        for stop in ('qty', 'quantity'):
+            i2 = desc.lower().find(stop)
+            if i2 > 0:
+                desc = desc[:i2]
+                break
+        desc = desc.strip(' :#')
+        if not desc:
+            continue
+        key = (desc[:30], amount)
+        if key in seen:
+            continue
+        seen.add(key)
+        items.append({
+            'description': desc,
+            'quantity': qty,
+            'amount': amount,
+        })
+    return items[:50]
