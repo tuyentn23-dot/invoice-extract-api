@@ -211,12 +211,12 @@ def extract_invoice_heuristic(text: str, language: Optional[str] = None) -> Dict
                 break
     subtotal = _find_amount(text, SUB_KW)
     tax = _find_amount(text, TAX_KW, exclude=['tax id', 'tax no', 'tax code', 'mst'])
-    total = _find_amount(text, TOTAL_KW, exclude=['subtotal', 'sub total', 'sub-total'])
+    total = _find_total(text)
     currency = _find_currency(text)
     vendor = _find_vendor(text)
     customer = _find_customer(text)
     tax_id = _find_tax_id(text)
-    items = _find_line_items(text)
+    items = _find_line_items(text) or _find_labeled_items(text)
 
     filled = sum(1 for x in [inv_num, inv_date, total, vendor, currency] if x)
     conf = round(min(1.0, filled / 5.0) * 0.9, 2)
@@ -239,3 +239,61 @@ def extract_invoice_heuristic(text: str, language: Optional[str] = None) -> Dict
         'notes': None,
         'confidence': conf,
     }
+
+
+
+STRONG_TOTAL_KW = ['total due', 'grand total', 'amount due', 'total amount']
+ITEM_LINE_MARKERS = ('qty', 'quantity', 'unit:', 'unit price')
+
+
+def _find_total(text):
+    for line in text.splitlines():
+        low = line.lower()
+        if any(k in low for k in STRONG_TOTAL_KW):
+            if any(m in low for m in ITEM_LINE_MARKERS):
+                continue
+            v = _money_in_line(line)
+            if v is not None:
+                return v
+    return None
+
+def _find_labeled_items(text):
+    items = []
+    seen = set()
+    for line in text.splitlines():
+        low = line.lower()
+        if 'qty' not in low and 'quantity' not in low:
+            continue
+        has_item_label = ('item:' in low or 'item #' in low or 'product:' in low or 'description:' in low)
+        if not has_item_label:
+            continue
+        # Extract numbers from line
+        nums = [m.group(0) for m in re.finditer(NUM_RE, low)]
+        if len(nums) < 3:
+            continue
+        desc = line.split(':', 1)[1] if ':' in line else line
+        for stop in ('qty', 'quantity'):
+            idx = desc.lower().find(stop)
+            if idx > 0:
+                desc = desc[:idx]
+                break
+        qty = None; unit = None; amount = None
+        try:
+            qty = _to_float(nums[0])
+            unit = _to_float(nums[1])
+            amount = _to_float(nums[2])
+        except Exception:
+            continue
+        key = (desc.strip()[:30], amount)
+        if key in seen:
+            continue
+        seen.add(key)
+        items.append({
+            'description': desc.strip(' :'),
+            'quantity': qty,
+            'unit_price': unit,
+            'amount': amount,
+            'tax_rate': None,
+        })
+    return items[:100]
+
