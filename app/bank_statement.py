@@ -17,7 +17,7 @@ MONEY_RE = re.compile(r'(?<![\d.])(' + NUM + r')(?![\d])')
 
 TXN_PAT = re.compile(
     r'^\s*(?P<date>\d{1,4}[-/\.]\d{1,2}[-/\.]\d{1,4})\s+'
-    r'(?P<desc>.+?)\s{2,}'
+    r'(?P<desc>.+?)\s+'
     r'(?P<amount>[+-]?' + NUM + r')\s*'
     r'(?P<balance>[+-]?' + NUM + r')?\s*$'
 )
