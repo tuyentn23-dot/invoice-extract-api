@@ -38,7 +38,7 @@ async def metrics_middleware(request: Request, call_next):
     response = await call_next(request)
     latency_ms = (time.time() - t0) * 1000
     # skip metrics on admin/health/docs to keep signal clean
-    if request.url.path not in ('/health', '/metrics', '/docs', '/openapi.json', '/redoc', '/'):
+    if request.url.path.startswith('/v1/'):
         subscriber = request.headers.get('X-RapidAPI-User') or None
         try:
             tracker.record(request.url.path, request.method, response.status_code, latency_ms, subscriber)
@@ -96,13 +96,14 @@ def robots_txt():
     return 'User-agent: *' + chr(10) + 'Allow: /' + chr(10) + 'Sitemap: ' + sm + chr(10)
 
 
-@app.get('/sitemap.xml', response_class=PlainTextResponse)
+@app.get('/sitemap.xml')
 def sitemap_xml():
     u = 'https://invoice-extract-api-4eq9.onrender.com/'
     x = '<?xml version="1.0" encoding="UTF-8"?>'
     x += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
     x += '<url><loc>' + u + '</loc></url></urlset>'
-    return x
+    from fastapi.responses import Response
+    return Response(x, media_type='application/xml')
 
 @app.get('/metrics')
 def metrics(request: Request):

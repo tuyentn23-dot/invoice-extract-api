@@ -3,9 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Invoice to JSON API - Extract Invoices, Receipts, Resumes to JSON (OCR, EN/VI)</title>
-<meta name="description" content="Free-to-try invoice OCR API. Convert invoices, receipts, resumes, bank statements and PDFs into clean structured JSON. Bilingual English/Vietnamese, OCR included.">
-<meta name="keywords" content="invoice to json, invoice ocr api, receipt parser, document extraction api, resume parser, bank statement parser, pdf to json, ocr api">
+<title>Invoice to JSON API: English and Vietnamese Extraction | TNT APIs</title>
+<meta name="description" content="Extract invoice fields from English or Vietnamese text into JSON. RapidAPI request example, OCR endpoint details and arithmetic validation workflow.">
+<meta property="og:title" content="Invoice to JSON API: English and Vietnamese Extraction">
+<meta property="og:description" content="Try invoice extraction through RapidAPI, then review fields and check invoice arithmetic before importing.">
+<meta property="og:url" content="https://invoice-extract-api-4eq9.onrender.com/">
 <link rel="canonical" href="https://invoice-extract-api-4eq9.onrender.com/">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebAPI", "name": "Invoice to JSON Extractor"}</script>
 <style>body{font-family:system-ui,sans-serif;margin:0;color:#111;line-height:1.6}.wrap{max-width:860px;margin:0 auto;padding:32px 20px}h1{font-size:2rem}h2{margin-top:2em;border-bottom:1px solid #eee}a{color:#0b5fff}pre{background:#0f172a;color:#e2e8f0;padding:16px;border-radius:8px;overflow:auto}table{border-collapse:collapse;width:100%}th,td{border:1px solid #e5e7eb;padding:8px;text-align:left}.cta{display:inline-block;background:#0b5fff;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;margin:8px 8px 8px 0}.muted{color:#666}</style>
@@ -15,7 +17,7 @@
 <p class="muted">Extract structured JSON from invoices, receipts, resumes, bank statements and more - with OCR, in English and Vietnamese.</p>
 <p><a class="cta" href="https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1">Get your API key on RapidAPI</a> <a class="cta" style="background:#111" href="/docs">API docs</a></p>
 <h2>What it does</h2>
-<p>Send raw text, an image or a PDF, and get back clean JSON: numbers, dates, vendor, totals and line items. No LLM key required. Typical response under 1 second.</p>
+<p>Send supplied document text or supported base64 input and receive structured fields for review. Invoice results can include numbers, dates, vendor, totals and line items. Consumers do not need an LLM key. Missing or ambiguous fields can be null; extraction is not guaranteed to be complete or accurate.</p>
 <h2>Supported documents</h2>
 <table><tr><th>Document</th><th>Endpoint</th></tr>
 <tr><td>Invoice</td><td><code>POST /v1/invoice/extract</code></td></tr>
@@ -27,13 +29,27 @@
 <tr><td>Business card</td><td><code>POST /v1/business-card/extract</code></td></tr>
 <tr><td>Utility bill</td><td><code>POST /v1/utility-bill/extract</code></td></tr>
 </table>
-<p class="muted">Every endpoint has a <code>/base64</code> variant for images and PDFs (OCR included).</p>
+<p class="muted">Invoice, receipt, resume and bank-statement routes have a <code>/base64</code> variant. Other routes accept <code>content_type</code> in their request body; see the reference for the exact supported request. OCR depends on document quality and installed language support.</p>
 <h2>Quick start</h2>
-<pre><code>curl -X POST https://invoice-extract-api-4eq9.onrender.com/v1/invoice/extract -H "Content-Type: application/json" -d '{"content": "INVOICE #12345 Total: 100.00 USD"}'</code></pre>
+<p>Subscribe on RapidAPI, set <code>RAPIDAPI_KEY</code> to your own consumer key, and run this POSIX-shell example. The gateway supplies provider authentication; direct backend calls are protected.</p>
+<pre><code>curl --request POST \
+  --url 'https://invoice-to-json-extractor1.p.rapidapi.com/v1/invoice/extract' \
+  --header 'Content-Type: application/json' \
+  --header "X-RapidAPI-Key: $RAPIDAPI_KEY" \
+  --header 'X-RapidAPI-Host: invoice-to-json-extractor1.p.rapidapi.com' \
+  --data '{"content":"Invoice No: SYNTHETIC-001\nDate: 2026-10-11\nVendor: Synthetic Demo Ltd\nSubtotal: 100 USD\nTax: 10 USD\nTotal: 110 USD","content_type":"text","language":"en"}'</code></pre>
+<p>The tested synthetic example returns <code>success: true</code>, <code>invoice.subtotal: 100</code>, <code>invoice.tax_amount: 10</code> and <code>invoice.total: 110</code>. This is one example, not an accuracy benchmark for your files.</p>
 <h2>Why developers use it</h2>
-<ul><li>No LLM key required - works out of the box</li><li>Bilingual English / Vietnamese</li><li>OCR for images and PDFs included</li><li>Fast: heuristic extraction in about 1 ms</li><li>Simple JSON in / JSON out</li></ul>
+<ul><li>No consumer LLM key required</li><li>English / Vietnamese invoice text support</li><li>Structured results and explicit missing fields</li><li>HTTP integration through RapidAPI</li></ul>
 <h2>Use cases</h2>
-<ul><li>Accounting automation and bookkeeping</li><li>Expense management apps</li><li>E-commerce order and receipt parsing</li><li>KYC / onboarding from business cards and IDs</li><li>Loan and bank-statement analysis</li></ul>
+<ul><li>Prepare invoice data for reviewed bookkeeping imports</li><li>Extract receipt fields for expense workflows</li><li>Convert supplied document text into a reviewable JSON structure</li></ul>
+<h2>Check arithmetic after extraction</h2>
+<p>Extraction and arithmetic checks solve different steps. Map <code>tax_amount</code> to <code>tax</code>, require subtotal and total, then use the <a href="https://commerce-quality-api.onrender.com/invoice-arithmetic-validator">Invoice Arithmetic Validator</a> to report mismatched totals. Neither step proves invoice authenticity or tax compliance.</p>
+<h2>Trích xuất hóa đơn sang JSON</h2>
+<p>Gửi văn bản hóa đơn tiếng Anh hoặc tiếng Việt để lấy các trường có cấu trúc. Kiểm tra lại trường thiếu, số tiền và dòng hàng trước khi nhập vào phần mềm kế toán.</p>
+<h2>Free hosting and limitations</h2>
+<p>Hosted on Render Free. Cold starts can take 50 seconds or more; no uptime SLA. OCR quality and parser coverage vary by document. Review outputs. Current quotas and prices are shown on the <a href="https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1/pricing">RapidAPI pricing page</a>.</p>
+<p>For CRM imports, see <a href="https://commerce-quality-api.onrender.com/vn-contact-cleaner">Vietnam contact normalization</a> and <a href="https://commerce-quality-api.onrender.com/batch-duplicate-candidates">exact duplicate candidates</a>.</p>
 <h2>Get started</h2>
 <p>Create a free API key on <a href="https://rapidapi.com/tuyentn23/api/invoice-to-json-extractor1">RapidAPI</a> and call the API in minutes. Full reference at <a href="/docs">/docs</a>.</p>
 <footer>Invoice to JSON Extractor - <a href="https://github.com/tuyentn23-dot/invoice-extract-api">GitHub</a> - <a href="/health">Health</a></footer>
