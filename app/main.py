@@ -21,12 +21,14 @@ from app.id_document import extract_id_document_heuristic
 from app.pdf_ocr import decode_to_text, ocr_status
 from app.openapi_compat import to_3_0_3
 from app.metrics import tracker
+from app.proxy_auth import authorized
 
-VERSION = '2.1.0'
+VERSION = '2.1.1'
 ADMIN_TOKEN = os.getenv('ADMIN_TOKEN', '').strip()
 app = FastAPI(title='Invoice to JSON Extractor', version=VERSION)
 
 PROXY_SECRET = os.getenv('RAPIDAPI_PROXY_SECRET', '').strip()
+GATEWAY_TOKEN = os.getenv('TNT_GATEWAY_TOKEN', '').strip()
 
 
 # ---------- Metrics middleware ----------
@@ -48,14 +50,8 @@ async def metrics_middleware(request: Request, call_next):
 # ---------- Auth middleware ----------
 @app.middleware('http')
 async def check_rapidapi_secret(request: Request, call_next):
-    if PROXY_SECRET and request.url.path not in ('/health', '/docs', '/openapi.json', '/redoc'):
-        # allow admin endpoint with its own token
-        if request.url.path == '/metrics' and ADMIN_TOKEN:
-            if request.headers.get('Authorization', '') == f'Bearer {ADMIN_TOKEN}':
-                return await call_next(request)
-        secret = request.headers.get('X-RapidAPI-Proxy-Secret', '')
-        if secret != PROXY_SECRET:
-            return JSONResponse(status_code=401, content={'detail': 'Invalid RapidAPI proxy secret'})
+    if not authorized(request.headers, request.url.path, PROXY_SECRET, ADMIN_TOKEN, GATEWAY_TOKEN):
+        return JSONResponse(status_code=401, content={'detail': 'Invalid or unconfigured credential'})
     return await call_next(request)
 
 

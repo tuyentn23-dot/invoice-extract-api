@@ -255,6 +255,13 @@ def _find_total(text):
             v = _money_in_line(line)
             if v is not None:
                 return v
+    # Plain total labels are common; keep stronger summary labels above first.
+    plain_label = re.compile(r'^\s*(?:total|tổng cộng|tong cong|tổng thanh toán|tong thanh toan|thành tiền|thanh tien)\s*(?:[:=-]\s*)?(?:[$€£₫]\s*)?\d', re.IGNORECASE)
+    for line in text.splitlines():
+        if plain_label.search(line) and not any(marker in line.lower() for marker in ITEM_LINE_MARKERS):
+            value = _money_in_line(line)
+            if value is not None:
+                return value
     return None
 
 def _find_labeled_items(text):
